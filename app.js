@@ -1179,7 +1179,24 @@ document.addEventListener("DOMContentLoaded", () => {
         "¿Deseas simular un pago aprobado automáticamente para probar las funciones de este plan?"
       );
       if (confirmSim) {
-        window.location.href = res.simulated_url;
+        // Activar premium en el backend de forma asíncrona
+        apiPost('/api/profile/premium', { plan });
+        
+        // Activar premium localmente al instante sin recargar la página
+        appState.userProfile.premium = true;
+        appState.userProfile.premiumPlan = plan;
+        saveState();
+        updatePremiumUI();
+        
+        // Mostrar modal de éxito
+        if (paymentSuccessModal) {
+          const isCoach = plan === 'coach';
+          paymentSuccessModal.querySelector("h2").innerText = isCoach ? "¡Suscripción Coach Activa!" : "¡Plan Auto-Guía Activo!";
+          paymentSuccessModal.querySelector("p").innerText = isCoach 
+            ? "Tu pago en Mercado Pago ha sido aprobado. Los canales de comunicación con tu coach asignado han sido habilitados de inmediato."
+            : "Tu pago en Mercado Pago ha sido aprobado. Todas las funciones de la aplicación han sido desbloqueadas.";
+          paymentSuccessModal.classList.remove("hidden");
+        }
       }
     } else {
       alert("No se pudo iniciar el pago con Mercado Pago. Por favor intenta de nuevo.");
