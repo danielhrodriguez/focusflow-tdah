@@ -1079,14 +1079,23 @@ document.addEventListener("DOMContentLoaded", () => {
           
           premiumStatusArea.innerHTML = `
             <span class="badge badge-emerald" style="background-color: rgba(245, 158, 11, 0.15); color: #f59e0b; padding: 6px 12px; border-radius: 9999px; font-size: 0.75rem; font-weight: 700; display: inline-block;">PLAN COACH PREMIUM ACTIVO</span>
-            <p class="text-sm mt-2 text-muted" style="font-size: 0.75rem; line-height: 1.3;">Asignado a: <strong>${coach.name}</strong>. Sincronización de panel activa. Ponte en contacto:</p>
+            <p class="text-sm mt-2 text-muted" style="font-size: 0.75rem; line-height: 1.3;">Asignado a: <strong>${coach.name}</strong>. Ponte en contacto con tu profesional:</p>
             
             <div class="d-flex flex-col gap-2 mt-3">
               <a href="https://wa.me/${coach.phone}?text=Hola%20${encodeURIComponent(coach.name)},%20me%20pongo%20en%20contacto%20contigo%20para%20coordinar%20una%20consulta%20de%20acompa%C3%B1amiento%20para%20TDAH.%20%C2%A1Muchas%20gracias!" target="_blank" class="btn btn-xs btn-primary btn-full-width" style="background-color: #25d366; border: none; display: flex; align-items: center; justify-content: center; gap: 5px; padding: 6px 0; font-weight: 600; color: #fff; border-radius: 6px;">
                 <span class="material-icons" style="font-size: 1rem;">chat</span> WhatsApp de ${coach.name.split(" ")[1]}
               </a>
-              <a href="mailto:${coach.email}?subject=FocusFlow%20Acompañamiento%20Paciente" class="btn btn-xs btn-secondary btn-full-width" style="display: flex; align-items: center; justify-content: center; gap: 5px; padding: 6px 0; font-weight: 600; border-radius: 6px;">
-                <span class="material-icons" style="font-size: 1rem;">mail</span> Enviar Correo
+              
+              <a href="https://mail.google.com/mail/?view=cm&fs=1&to=${coach.email}&su=Consulta%20de%20acompa%C3%B1amiento%20para%20TDAH&body=Hola%20${encodeURIComponent(coach.name)},%20me%20gustar%C3%ADa%20coordinar%20una%20consulta%20de%20acompa%C3%B1amiento." target="_blank" class="btn btn-xs btn-secondary btn-full-width" style="display: flex; align-items: center; justify-content: center; gap: 5px; padding: 6px 0; font-weight: 600; border-radius: 6px; border: 1px solid rgba(255,255,255,0.05); background: rgba(234, 67, 53, 0.1); color: #fca5a5;">
+                <span class="material-icons" style="font-size: 1rem; color: #ea4335;">mail</span> Redactar en Gmail
+              </a>
+
+              <a href="https://outlook.live.com/mail/0/deeplink/compose?to=${coach.email}&subject=Consulta%20de%20acompa%C3%B1amiento%20para%20TDAH&body=Hola%20${encodeURIComponent(coach.name)},%20me%20gustar%C3%ADa%20coordinar%20una%20consulta%20de%20acompa%C3%B1amiento." target="_blank" class="btn btn-xs btn-secondary btn-full-width" style="display: flex; align-items: center; justify-content: center; gap: 5px; padding: 6px 0; font-weight: 600; border-radius: 6px; border: 1px solid rgba(255,255,255,0.05); background: rgba(0, 120, 212, 0.1); color: #93c5fd;">
+                <span class="material-icons" style="font-size: 1rem; color: #0078d4;">mail</span> Redactar en Outlook/Hotmail
+              </a>
+
+              <a href="mailto:${coach.email}?subject=Consulta%20de%20acompa%C3%B1amiento%20para%20TDAH" class="btn btn-xs btn-secondary btn-full-width" style="display: flex; align-items: center; justify-content: center; gap: 5px; padding: 6px 0; font-weight: 600; border-radius: 6px; font-size: 0.7rem; opacity: 0.6;">
+                <span class="material-icons" style="font-size: 0.9rem;">open_in_new</span> Abrir cliente local (mailto)
               </a>
             </div>
           `;
