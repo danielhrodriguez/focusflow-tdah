@@ -266,21 +266,38 @@
         </div>
 
         <!-- Tarjeta de Suscripción Premium Mercado Pago -->
-        <div class="card flex-col flex-justify-between" id="premium-subscription-card">
-          <div class="d-flex flex-items-center gap-2">
+        <div class="card flex-col" id="premium-subscription-card" style="grid-row: span 1;">
+          <div class="d-flex flex-items-center gap-2 mb-3">
             <span class="material-icons text-amber">verified</span>
-            <h3 style="margin: 0;">Plan Coach Premium</h3>
+            <h3 style="margin: 0; font-size: 1.1rem;">Planes de Acompañamiento</h3>
           </div>
-          <p class="text-muted text-sm my-3" style="font-size: 0.825rem; line-height: 1.4;">Desbloquea reportes extendidos de CADDRA y videollamadas con tu coach certificado.</p>
           
-          <div id="premium-status-area" class="mt-auto">
-            <div class="premium-price mb-3" style="font-size: 1.15rem; font-weight: 700; color: var(--color-text-primary);">
-              $1.500 <span class="price-period" style="font-size: 0.8rem; font-weight: 400; color: var(--color-text-secondary);">/ mes</span>
+          <div id="premium-status-area" class="d-flex flex-col gap-4">
+            
+            <!-- Plan 1: Solo App -->
+            <div class="plan-box" style="padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); background: rgba(0,0,0,0.15);">
+              <div class="d-flex flex-justify-between flex-items-center mb-1">
+                <span style="font-weight: 600; font-size: 0.85rem;">Plan Auto-Guía</span>
+                <span style="font-weight: 700; color: var(--color-teal); font-size: 0.9rem;">$1.500<span style="font-weight: 400; font-size: 0.7rem; color: var(--color-text-secondary);">/mes</span></span>
+              </div>
+              <p class="text-muted" style="font-size: 0.75rem; margin-bottom: 8px; line-height: 1.3;">Acceso a herramientas de TCC, Fidget Zone y temporizador anti-parálisis.</p>
+              <button id="btn-subscribe-app" class="btn btn-secondary btn-xs btn-full-width" style="padding: 5px;">
+                Adquirir Solo App
+              </button>
             </div>
-            <button id="btn-subscribe-mp" class="btn btn-primary btn-full-width" style="background-color: #009ee3; color: #fff; box-shadow: 0 4px 10px rgba(0, 158, 227, 0.25); border: none; font-weight: 600;">
-              <span class="material-icons" style="font-size: 1.1rem; margin-right: 5px; vertical-align: middle;">payment</span>
-              Pagar con Mercado Pago
-            </button>
+
+            <!-- Plan 2: Coach Premium -->
+            <div class="plan-box" style="padding: 12px; border-radius: 8px; border: 1px solid rgba(20, 184, 166, 0.25); background: rgba(20, 184, 166, 0.04);">
+              <div class="d-flex flex-justify-between flex-items-center mb-1">
+                <span style="font-weight: 600; font-size: 0.85rem; color: var(--color-text-primary);">Plan Coach Premium</span>
+                <span style="font-weight: 700; color: var(--color-amber); font-size: 0.9rem;">$7.500<span style="font-weight: 400; font-size: 0.7rem; color: var(--color-text-secondary);">/mes</span></span>
+              </div>
+              <p class="text-muted" style="font-size: 0.75rem; margin-bottom: 8px; line-height: 1.3;">Todo el plan Auto-Guía + Conexión directa con tu Coach y alertas de CADDRA.</p>
+              <button id="btn-subscribe-coach" class="btn btn-primary btn-xs btn-full-width" style="background-color: #009ee3; border: none; padding: 5px; box-shadow: 0 2px 6px rgba(0, 158, 227, 0.25);">
+                Adquirir con Coach
+              </button>
+            </div>
+
           </div>
         </div>
 

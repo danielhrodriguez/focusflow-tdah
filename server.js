@@ -103,6 +103,7 @@ app.post('/api/profile', (req, res) => {
 app.post('/api/profile/premium', (req, res) => {
   const db = readDatabase();
   db.userProfile.premium = true;
+  db.userProfile.premiumPlan = req.body.plan || 'coach';
   db.adherenceMetrics.premiumUnlocked = true;
   writeDatabase(db);
   res.json({ success: true, profile: db.userProfile });
@@ -207,21 +208,26 @@ app.get('/api/coach/dashboard', (req, res) => {
 app.post('/api/checkout/mercadopago', async (req, res) => {
   try {
     const host = req.body.host || `http://localhost:${PORT}`;
+    const plan = req.body.plan || 'coach';
+    const isApp = plan === 'app';
+    const price = isApp ? 1500.00 : 7500.00;
+    const title = isApp ? 'Suscripción FocusFlow Solo App' : 'Suscripción FocusFlow Coach Premium';
+
     const preference = new Preference(client);
     
     const response = await preference.create({
       body: {
         items: [
           {
-            id: 'plan-premium-tdah',
-            title: 'Suscripción FocusFlow Coach Premium',
+            id: isApp ? 'plan-app-only' : 'plan-coach-premium',
+            title: title,
             quantity: 1,
-            unit_price: 1500.00,
-            currency_id: 'ARS' // Peso Argentino (o cambia a tu moneda local, ej. MXN, CLP, etc.)
+            unit_price: price,
+            currency_id: 'ARS'
           }
         ],
         back_urls: {
-          success: `${host}/?payment=success`,
+          success: `${host}/?payment=success&plan=${plan}`,
           failure: `${host}/?payment=failure`,
           pending: `${host}/?payment=pending`
         },

@@ -118,7 +118,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const roleCoachBtn = document.getElementById("role-coach");
 
   // Elementos de Suscripción Mercado Pago
-  const btnSubscribeMp = document.getElementById("btn-subscribe-mp");
+  const btnSubscribeApp = document.getElementById("btn-subscribe-app");
+  const btnSubscribeCoach = document.getElementById("btn-subscribe-coach");
   const paymentSuccessModal = document.getElementById("payment-success-modal");
   const btnClosePaymentModal = document.getElementById("btn-close-payment-modal");
   const premiumStatusArea = document.getElementById("premium-status-area");
@@ -1053,11 +1054,30 @@ document.addEventListener("DOMContentLoaded", () => {
   // ==========================================
   function updatePremiumUI() {
     if (appState.userProfile.premium) {
+      const plan = appState.userProfile.premiumPlan || 'coach';
+      const isCoach = plan === 'coach';
+      
       if (premiumStatusArea) {
-        premiumStatusArea.innerHTML = `
-          <span class="badge badge-emerald" style="background-color: rgba(16, 185, 129, 0.15); color: #10b981; padding: 6px 12px; border-radius: 9999px; font-size: 0.8rem; font-weight: 600; display: inline-block;">PLAN PREMIUM ACTIVO</span>
-          <p class="text-sm mt-3 text-emerald" style="font-size: 0.8rem; color: #10b981; line-height: 1.4;">Acceso completo desbloqueado. Tu base de datos y tu coach están sincronizados en tiempo real.</p>
-        `;
+        if (isCoach) {
+          premiumStatusArea.innerHTML = `
+            <span class="badge badge-emerald" style="background-color: rgba(245, 158, 11, 0.15); color: #f59e0b; padding: 6px 12px; border-radius: 9999px; font-size: 0.75rem; font-weight: 700; display: inline-block;">PLAN COACH PREMIUM ACTIVO</span>
+            <p class="text-sm mt-2 text-muted" style="font-size: 0.75rem; line-height: 1.3;">Sincronización de panel activa. Ponte en contacto con tu Coach asignado:</p>
+            
+            <div class="d-flex flex-col gap-2 mt-3">
+              <a href="https://wa.me/5491122334455?text=Hola,%20soy%20tu%20paciente%20de%20FocusFlow.%20Acabo%20de%20activar%20mi%20Plan%20Premium." target="_blank" class="btn btn-xs btn-primary btn-full-width" style="background-color: #25d366; border: none; display: flex; align-items: center; justify-content: center; gap: 5px; padding: 6px 0; font-weight: 600; color: #fff; border-radius: 6px;">
+                <span class="material-icons" style="font-size: 1rem;">chat</span> WhatsApp del Coach
+              </a>
+              <a href="mailto:coach@focusflow.com?subject=FocusFlow%20Acompañamiento%20Paciente" class="btn btn-xs btn-secondary btn-full-width" style="display: flex; align-items: center; justify-content: center; gap: 5px; padding: 6px 0; font-weight: 600; border-radius: 6px;">
+                <span class="material-icons" style="font-size: 1rem;">mail</span> Enviar Correo al Coach
+              </a>
+            </div>
+          `;
+        } else {
+          premiumStatusArea.innerHTML = `
+            <span class="badge badge-emerald" style="background-color: rgba(20, 184, 166, 0.15); color: #14b8a6; padding: 6px 12px; border-radius: 9999px; font-size: 0.75rem; font-weight: 700; display: inline-block;">PLAN AUTO-GUÍA ACTIVO</span>
+            <p class="text-sm mt-3 text-muted" style="font-size: 0.75rem; line-height: 1.4;">Acceso completo desbloqueado a las herramientas TCC, Fidget Zone y temporizador anti-parálisis sin coach.</p>
+          `;
+        }
       }
     }
   }
@@ -1065,15 +1085,25 @@ document.addEventListener("DOMContentLoaded", () => {
   async function checkPaymentReturn() {
     const params = new URLSearchParams(window.location.search);
     if (params.get("payment") === "success") {
-      const res = await apiPost('/api/profile/premium', {});
+      const plan = params.get("plan") || 'coach';
+      const res = await apiPost('/api/profile/premium', { plan });
       if (res && res.success) {
         appState.userProfile.premium = true;
+        appState.userProfile.premiumPlan = plan;
       } else {
         appState.userProfile.premium = true;
+        appState.userProfile.premiumPlan = plan;
       }
       saveState();
 
       if (paymentSuccessModal) {
+        // Personalizar el modal según el plan comprado
+        const isCoach = plan === 'coach';
+        paymentSuccessModal.querySelector("h2").innerText = isCoach ? "¡Suscripción Coach Activa!" : "¡Plan Auto-Guía Activo!";
+        paymentSuccessModal.querySelector("p").innerText = isCoach 
+          ? "Tu pago en Mercado Pago ha sido aprobado. Hemos notificado a tu coach y habilitado tus canales de chat de inmediato."
+          : "Tu pago en Mercado Pago ha sido aprobado. Todas las funciones de la aplicación han sido desbloqueadas.";
+        
         paymentSuccessModal.classList.remove("hidden");
       }
       
@@ -1084,22 +1114,28 @@ document.addEventListener("DOMContentLoaded", () => {
     updatePremiumUI();
   }
 
-  if (btnSubscribeMp) {
-    btnSubscribeMp.addEventListener("click", async () => {
-      btnSubscribeMp.innerText = "Cargando...";
-      btnSubscribeMp.setAttribute("disabled", "true");
-      
-      const host = window.location.origin;
-      const res = await apiPost('/api/checkout/mercadopago', { host });
-      
-      if (res && res.init_point) {
-        window.location.href = res.init_point;
-      } else {
-        alert("No se pudo iniciar el pago con Mercado Pago. Por favor intenta de nuevo.");
-        btnSubscribeMp.innerText = "Pagar con Mercado Pago";
-        btnSubscribeMp.removeAttribute("disabled");
-      }
-    });
+  async function handleSubscription(plan, buttonEl) {
+    buttonEl.innerText = "Cargando...";
+    buttonEl.setAttribute("disabled", "true");
+    
+    const host = window.location.origin;
+    const res = await apiPost('/api/checkout/mercadopago', { host, plan });
+    
+    if (res && res.init_point) {
+      window.location.href = res.init_point;
+    } else {
+      alert("No se pudo iniciar el pago con Mercado Pago. Por favor intenta de nuevo.");
+      buttonEl.innerText = plan === 'app' ? "Adquirir Solo App" : "Adquirir con Coach";
+      buttonEl.removeAttribute("disabled");
+    }
+  }
+
+  if (btnSubscribeApp) {
+    btnSubscribeApp.addEventListener("click", () => handleSubscription('app', btnSubscribeApp));
+  }
+
+  if (btnSubscribeCoach) {
+    btnSubscribeCoach.addEventListener("click", () => handleSubscription('coach', btnSubscribeCoach));
   }
 
   if (btnClosePaymentModal) {
