@@ -466,8 +466,17 @@ document.addEventListener("DOMContentLoaded", () => {
       document.getElementById("stat-breaths").innerText = appState.userProfile.breathsDone || 0;
       showView("dashboard");
     } else {
-      // Fallback a localStorage si el servidor está apagado
+      // Si el cliente ya completó el intake localmente, sincronizarlo al servidor
       if (appState.userProfile.completedIntake) {
+        await apiPost('/api/profile', {
+          name: appState.userProfile.name,
+          country: appState.userProfile.country || 'ARG',
+          kryptoniteArea: appState.userProfile.kryptoniteArea,
+          asrsScore: appState.userProfile.asrsScore,
+          camhAlerts: appState.userProfile.camhAlerts,
+          intakeData: appState.intakeData
+        });
+        
         document.getElementById("client-name-display").innerText = appState.userProfile.name;
         document.getElementById("stat-kryptonite-area").innerText = appState.userProfile.kryptoniteArea.split(", ")[0];
         document.getElementById("stat-breaths").innerText = appState.userProfile.breathsDone || 0;
