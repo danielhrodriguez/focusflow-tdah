@@ -1128,7 +1128,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const isCoach = plan === 'coach';
         paymentSuccessModal.querySelector("h2").innerText = isCoach ? "¡Suscripción Coach Activa!" : "¡Plan Auto-Guía Activo!";
         paymentSuccessModal.querySelector("p").innerText = isCoach 
-          ? "Tu pago en Mercado Pago ha sido aprobado. Hemos notificado a tu coach y habilitado tus canales de chat de inmediato."
+          ? "Tu pago en Mercado Pago ha sido aprobado. Los canales de comunicación con tu coach asignado han sido habilitados de inmediato."
           : "Tu pago en Mercado Pago ha sido aprobado. Todas las funciones de la aplicación han sido desbloqueadas.";
         
         paymentSuccessModal.classList.remove("hidden");
@@ -1148,12 +1148,21 @@ document.addEventListener("DOMContentLoaded", () => {
     const host = window.location.origin;
     const res = await apiPost('/api/checkout/mercadopago', { host, plan });
     
+    buttonEl.innerText = plan === 'app' ? "Adquirir Solo App" : "Adquirir con Coach";
+    buttonEl.removeAttribute("disabled");
+    
     if (res && res.init_point) {
       window.location.href = res.init_point;
+    } else if (res && res.simulated_url) {
+      const confirmSim = confirm(
+        "Mercado Pago está en modo Sandbox sin credenciales reales de producción configuradas.\n\n" +
+        "¿Deseas simular un pago aprobado automáticamente para probar las funciones de este plan?"
+      );
+      if (confirmSim) {
+        window.location.href = res.simulated_url;
+      }
     } else {
       alert("No se pudo iniciar el pago con Mercado Pago. Por favor intenta de nuevo.");
-      buttonEl.innerText = plan === 'app' ? "Adquirir Solo App" : "Adquirir con Coach";
-      buttonEl.removeAttribute("disabled");
     }
   }
 

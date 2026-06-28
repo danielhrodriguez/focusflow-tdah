@@ -213,9 +213,9 @@ app.post('/api/checkout/mercadopago', async (req, res) => {
   const title = isApp ? 'Suscripción FocusFlow Solo App' : 'Suscripción FocusFlow Coach Premium';
 
   try {
-    // Si el token es el ficticio por defecto, forzar el simulador
-    if (MP_TOKEN.includes('12345678')) {
-      throw new Error("Token ficticio detectado");
+    // Si el token es el ficticio por defecto, forzar el uso del simulador opcional
+    if (MP_TOKEN.includes('12345678') || MP_TOKEN === 'TEST-DEFAULT') {
+      throw new Error("Token ficticio detectado en el servidor");
     }
 
     const preference = new Preference(client);
@@ -244,9 +244,12 @@ app.post('/api/checkout/mercadopago', async (req, res) => {
   } catch (error) {
     console.warn("Mercado Pago falló o no está configurado (redireccionando a simulador):", error.message);
     
-    // Fallback: Redirige automáticamente al usuario con el estado de éxito simulado
-    const mockInitPoint = `${host}/?payment=success&plan=${plan}`;
-    res.json({ init_point: mockInitPoint, simulated: true });
+    // Retornar error de configuración pero adjuntar la URL de simulación de éxito para confirmación del cliente
+    res.status(400).json({ 
+      error: "Credenciales de Mercado Pago no configuradas o inválidas", 
+      details: error.message,
+      simulated_url: `${host}/?payment=success&plan=${plan}`
+    });
   }
 });
 
