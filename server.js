@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
+const { MercadoPagoConfig, Preference } = require('mercadopago');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -14,6 +15,13 @@ app.use(express.json());
 app.use(express.static(__dirname));
 
 // ==========================================
+// CONFIGURACIÓN DE MERCADO PAGO (SANDBOX)
+// ==========================================
+// Reemplazar con tu Access Token de producción o Sandbox en Render a través de variables de entorno
+const MP_TOKEN = process.env.MP_ACCESS_TOKEN || 'TEST-3398495045051910-062818-47a3e7efcd316d3f23a9689e47f7dcd1-12345678';
+const client = new MercadoPagoConfig({ accessToken: MP_TOKEN });
+
+// ==========================================
 // CONTROLADOR DE BASE DE DATOS LOCAL (db.json)
 // ==========================================
 const defaultData = {
@@ -23,7 +31,8 @@ const defaultData = {
     kryptoniteArea: "Pendiente",
     asrsScore: 0,
     camhAlerts: 0,
-    breathsDone: 0
+    breathsDone: 0,
+    premium: false
   },
   intakeData: {
     asrsAnswers: [],
@@ -36,7 +45,8 @@ const defaultData = {
     tasksDivided: 0,
     tasksCompleted: 0,
     breathingExercisesDone: 0,
-    cognitiveRestructurings: 0
+    cognitiveRestructurings: 0,
+    premiumUnlocked: false
   }
 };
 
@@ -81,11 +91,19 @@ app.post('/api/profile', (req, res) => {
     completedIntake: true
   };
   
-  // Guardar también las respuestas del cuestionario
   if (req.body.intakeData) {
     db.intakeData = req.body.intakeData;
   }
 
+  writeDatabase(db);
+  res.json({ success: true, profile: db.userProfile });
+});
+
+// Activar Premium directamente (retorno exitoso de pasarela)
+app.post('/api/profile/premium', (req, res) => {
+  const db = readDatabase();
+  db.userProfile.premium = true;
+  db.adherenceMetrics.premiumUnlocked = true;
   writeDatabase(db);
   res.json({ success: true, profile: db.userProfile });
 });
@@ -104,9 +122,8 @@ app.post('/api/logs', (req, res) => {
     timestamp: Date.now()
   };
 
-  db.dailyLogs.unshift(newLog); // Añadir al inicio
+  db.dailyLogs.unshift(newLog);
   
-  // Si la frustración es alta, actualizar contador de respiraciones (simulación del coach)
   if (newLog.frustration >= 8) {
     db.userProfile.breathsDone = (db.userProfile.breathsDone || 0) + 1;
     db.adherenceMetrics.breathingExercisesDone = (db.adherenceMetrics.breathingExercisesDone || 0) + 1;
@@ -119,7 +136,7 @@ app.post('/api/logs', (req, res) => {
 // 5. Actualizar métricas de adherencia (Micro-hábitos, TCC)
 app.post('/api/adherence', (req, res) => {
   const db = readDatabase();
-  const { metric } = req.body; // tasksCreated | tasksCompleted | breathingExercisesDone | cognitiveRestructurings
+  const { metric } = req.body;
   
   if (db.adherenceMetrics[metric] !== undefined) {
     db.adherenceMetrics[metric]++;
@@ -137,7 +154,6 @@ app.post('/api/adherence', (req, res) => {
 app.get('/api/coach/dashboard', (req, res) => {
   const db = readDatabase();
   
-  // Alertas estáticas iniciales (seedData)
   const defaultAlerts = [
     {
       type: "Riesgo de Conducción (JDQ)",
@@ -153,10 +169,8 @@ app.get('/api/coach/dashboard', (req, res) => {
     }
   ];
 
-  // Alertas en tiempo real basadas en la base de datos
   const liveAlerts = [];
   
-  // Alerta 1: Frustración persistente en los registros reales
   if (db.dailyLogs.length >= 3) {
     const last3 = db.dailyLogs.slice(0, 3);
     const frusts = last3.map(l => l.frustration);
@@ -183,6 +197,64 @@ app.get('/api/coach/dashboard', (req, res) => {
     adherenceMetrics: db.adherenceMetrics,
     alerts: [...liveAlerts, ...defaultAlerts]
   });
+});
+
+// ==========================================
+// ENDPOINTS MERCADO PAGO
+// ==========================================
+
+// 1. Crear Preferencia de Pago
+app.post('/api/checkout/mercadopago', async (req, res) => {
+  try {
+    const host = req.body.host || `http://localhost:${PORT}`;
+    const preference = new Preference(client);
+    
+    const response = await preference.create({
+      body: {
+        items: [
+          {
+            id: 'plan-premium-tdah',
+            title: 'Suscripción FocusFlow Coach Premium',
+            quantity: 1,
+            unit_price: 1500.00,
+            currency_id: 'ARS' // Peso Argentino (o cambia a tu moneda local, ej. MXN, CLP, etc.)
+          }
+        ],
+        back_urls: {
+          success: `${host}/?payment=success`,
+          failure: `${host}/?payment=failure`,
+          pending: `${host}/?payment=pending`
+        },
+        auto_return: 'approved',
+        notification_url: `${host}/api/webhook/mercadopago`
+      }
+    });
+
+    res.json({ init_point: response.init_point });
+  } catch (error) {
+    console.error("Error creando preferencia Mercado Pago:", error);
+    res.status(500).json({ error: "Error en el servidor de pagos", details: error.message });
+  }
+});
+
+// 2. Webhook / Notificación IPN (IPN Listener)
+app.post('/api/webhook/mercadopago', (req, res) => {
+  const { query } = req;
+  const topic = query.topic || query.type;
+  
+  if (topic === 'payment') {
+    const paymentId = query.id || query['data.id'];
+    console.log(`[Webhook] Notificación de pago recibida. ID: ${paymentId}`);
+    
+    // Automatizar la aprobación del premium en el backend local
+    const db = readDatabase();
+    db.userProfile.premium = true;
+    db.adherenceMetrics.premiumUnlocked = true;
+    writeDatabase(db);
+    console.log(`[Webhook] Suscripción Premium activada con éxito en db.json.`);
+  }
+
+  res.sendStatus(200);
 });
 
 // Iniciar servidor

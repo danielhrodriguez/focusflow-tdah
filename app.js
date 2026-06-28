@@ -12,7 +12,8 @@ document.addEventListener("DOMContentLoaded", () => {
       kryptoniteArea: "Pendiente",
       asrsScore: 0,
       camhAlerts: 0,
-      breathsDone: 0
+      breathsDone: 0,
+      premium: false
     },
     intakeData: {
       asrsAnswers: [],
@@ -115,6 +116,12 @@ document.addEventListener("DOMContentLoaded", () => {
   const alertsList = document.getElementById("coach-alerts-list");
   const roleClientBtn = document.getElementById("role-client");
   const roleCoachBtn = document.getElementById("role-coach");
+
+  // Elementos de Suscripción Mercado Pago
+  const btnSubscribeMp = document.getElementById("btn-subscribe-mp");
+  const paymentSuccessModal = document.getElementById("payment-success-modal");
+  const btnClosePaymentModal = document.getElementById("btn-close-payment-modal");
+  const premiumStatusArea = document.getElementById("premium-status-area");
 
   // ==========================================
   // HELPERS DE CONEXIÓN CON EXPRESS (BACKEND)
@@ -440,6 +447,9 @@ document.addEventListener("DOMContentLoaded", () => {
   // INICIALIZACIÓN ASÍNCRONA
   // ==========================================
   async function initializeFocusFlow() {
+    // Chequear retorno de pagos antes de inicializar vistas
+    await checkPaymentReturn();
+
     const profile = await apiGet('/api/profile');
     if (profile && profile.completedIntake) {
       appState.userProfile = profile;
@@ -1036,6 +1046,67 @@ document.addEventListener("DOMContentLoaded", () => {
       dailyLogs: appState.dailyLogs,
       adherenceMetrics: appState.adherenceMetrics
     }));
+  }
+
+  // ==========================================
+  // INTEGRACIÓN DE MERCADO PAGO LÓGICA
+  // ==========================================
+  function updatePremiumUI() {
+    if (appState.userProfile.premium) {
+      if (premiumStatusArea) {
+        premiumStatusArea.innerHTML = `
+          <span class="badge badge-emerald" style="background-color: rgba(16, 185, 129, 0.15); color: #10b981; padding: 6px 12px; border-radius: 9999px; font-size: 0.8rem; font-weight: 600; display: inline-block;">PLAN PREMIUM ACTIVO</span>
+          <p class="text-sm mt-3 text-emerald" style="font-size: 0.8rem; color: #10b981; line-height: 1.4;">Acceso completo desbloqueado. Tu base de datos y tu coach están sincronizados en tiempo real.</p>
+        `;
+      }
+    }
+  }
+
+  async function checkPaymentReturn() {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("payment") === "success") {
+      const res = await apiPost('/api/profile/premium', {});
+      if (res && res.success) {
+        appState.userProfile.premium = true;
+      } else {
+        appState.userProfile.premium = true;
+      }
+      saveState();
+
+      if (paymentSuccessModal) {
+        paymentSuccessModal.classList.remove("hidden");
+      }
+      
+      // Limpiar parámetros de la URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+    
+    updatePremiumUI();
+  }
+
+  if (btnSubscribeMp) {
+    btnSubscribeMp.addEventListener("click", async () => {
+      btnSubscribeMp.innerText = "Cargando...";
+      btnSubscribeMp.setAttribute("disabled", "true");
+      
+      const host = window.location.origin;
+      const res = await apiPost('/api/checkout/mercadopago', { host });
+      
+      if (res && res.init_point) {
+        window.location.href = res.init_point;
+      } else {
+        alert("No se pudo iniciar el pago con Mercado Pago. Por favor intenta de nuevo.");
+        btnSubscribeMp.innerText = "Pagar con Mercado Pago";
+        btnSubscribeMp.removeAttribute("disabled");
+      }
+    });
+  }
+
+  if (btnClosePaymentModal) {
+    btnClosePaymentModal.addEventListener("click", () => {
+      paymentSuccessModal.classList.add("hidden");
+      updatePremiumUI();
+    });
   }
 
 });
