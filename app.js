@@ -1082,7 +1082,7 @@ document.addEventListener("DOMContentLoaded", () => {
             <p class="text-sm mt-2 text-muted" style="font-size: 0.75rem; line-height: 1.3;">Asignado a: <strong>${coach.name}</strong>. Sincronización de panel activa. Ponte en contacto:</p>
             
             <div class="d-flex flex-col gap-2 mt-3">
-              <a href="https://wa.me/${coach.phone}?text=Hola%20${encodeURIComponent(coach.name)},%20soy%20tu%20paciente%20de%20FocusFlow%20y%20acabo%20de%20adquirir%20mi%20Plan%20Premium." target="_blank" class="btn btn-xs btn-primary btn-full-width" style="background-color: #25d366; border: none; display: flex; align-items: center; justify-content: center; gap: 5px; padding: 6px 0; font-weight: 600; color: #fff; border-radius: 6px;">
+              <a href="https://wa.me/${coach.phone}?text=Hola%20${encodeURIComponent(coach.name)},%20me%20pongo%20en%20contacto%20contigo%20para%20coordinar%20una%20consulta%20de%20acompa%C3%B1amiento%20para%20TDAH.%20%C2%A1Muchas%20gracias!" target="_blank" class="btn btn-xs btn-primary btn-full-width" style="background-color: #25d366; border: none; display: flex; align-items: center; justify-content: center; gap: 5px; padding: 6px 0; font-weight: 600; color: #fff; border-radius: 6px;">
                 <span class="material-icons" style="font-size: 1rem;">chat</span> WhatsApp de ${coach.name.split(" ")[1]}
               </a>
               <a href="mailto:${coach.email}?subject=FocusFlow%20Acompañamiento%20Paciente" class="btn btn-xs btn-secondary btn-full-width" style="display: flex; align-items: center; justify-content: center; gap: 5px; padding: 6px 0; font-weight: 600; border-radius: 6px;">
