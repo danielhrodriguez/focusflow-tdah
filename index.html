@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FocusFlow | Acompañante para TDAH en Adultos</title>
+  <!-- Google Fonts & Material Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="dark-theme">
+
+  <!-- CAPA DE INTERVENCIÓN "PARAR Y PENSAR" (OVERLAY GLOBAL) -->
+  <div id="stop-think-overlay" class="overlay hidden">
+    <div class="overlay-content">
+      <div class="clinical-tag"><span class="material-icons">spa</span> TCC: Parar y Pensar</div>
+      
+      <!-- Paso 1: Respiración -->
+      <div id="st-step-breathing" class="st-step">
+        <h2>Pausa un segundo.</h2>
+        <p class="st-instruction">Tu cerebro va más rápido que el sistema. Sigue el círculo y toma una respiración profunda.</p>
+        <div class="breath-container">
+          <div class="breath-circle"></div>
+          <div class="breath-text">Inhala...</div>
+        </div>
+        <div class="timer-bar-container">
+          <div id="breath-progress" class="timer-bar"></div>
+        </div>
+      </div>
+
+      <!-- Paso 2: Autorreflexión -->
+      <div id="st-step-reflection" class="st-step hidden">
+        <h2>Evaluemos con calma.</h2>
+        <p class="st-instruction">Contesta sinceramente antes de proceder:</p>
+        
+        <div class="reflection-question-card">
+          <label class="q-label">¿Esta acción te acerca a tu meta de hoy o es solo un impulso?</label>
+          <div class="q-options">
+            <button class="btn-reflect" data-value="meta">Me acerca a mi meta</button>
+            <button class="btn-reflect" data-value="impulso">Es solo un impulso</button>
+          </div>
+        </div>
+
+        <div class="reflection-question-card mt-4">
+          <label class="q-label">¿Cuál será la consecuencia a largo plazo si actúas bajo esta emoción?</label>
+          <div class="q-options">
+            <button class="btn-reflect" data-value="alivio">Alivio temporal pero más estrés</button>
+            <button class="btn-reflect" data-value="control">Mayor paz y control</button>
+          </div>
+        </div>
+
+        <button id="btn-submit-reflection" class="btn btn-primary mt-6" disabled>Confirmar Respuestas</button>
+      </div>
+
+      <!-- Paso 3: Cierre positivo -->
+      <div id="st-step-completion" class="st-step hidden">
+        <span class="material-icons success-icon">check_circle</span>
+        <h2>Control recuperado.</h2>
+        <p class="st-instruction">Tus estrategias de afrontamiento están funcionando. El sistema se ha desbloqueado.</p>
+        <button id="btn-close-overlay" class="btn btn-emerald mt-6">Volver con Calma</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- CABECERA PERSISTENTE (Mitiga Inatención y proporciona anclaje) -->
+  <header class="app-header">
+    <div class="header-brand">
+      <span class="material-icons logo-icon">bubble_chart</span>
+      <div>
+        <h1>FocusFlow</h1>
+        <div class="breadcrumbs">
+          <span id="bc-root">App</span> &gt; <span id="bc-current" class="active">Intake</span>
+        </div>
+      </div>
+    </div>
+    <div class="header-actions">
+      <!-- Fidgeting rápido en la cabecera -->
+      <button id="btn-quick-fidget" class="btn btn-secondary btn-icon" title="Estrés / Fidgeting">
+        <span class="material-icons">insights</span>
+        <span class="btn-text">Fidget Zona</span>
+      </button>
+      <!-- Selector de Rol (Cliente vs Coach) -->
+      <div class="role-selector">
+        <button id="role-client" class="btn-role active" data-role="client">Espacio Personal</button>
+        <button id="role-coach" class="btn-role" data-role="coach">Panel Coach</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- CONTENEDOR PRINCIPAL DE PANTALLAS (SPA Router) -->
+  <main class="app-container">
+
+    <!-- 1. PANTALLA DE INTAKE / ONBOARDING -->
+    <section id="view-intake" class="app-view">
+      <div class="view-header">
+        <span class="badge badge-clinical">Onboarding Clínico</span>
+        <h2>Evaluación Inicial FocusFlow</h2>
+        <p class="subtitle">Este test rápido ayuda al coach a diseñar estrategias de afrontamiento personalizadas para tu TDAH.</p>
+      </div>
+
+      <div class="intake-wizard-card">
+        <!-- Barra de progreso general del onboarding -->
+        <div class="wizard-progress">
+          <div class="w-step active" data-step="1">1. Cribado ASRS</div>
+          <div class="w-step" data-step="2">2. Marcadores CAMH</div>
+          <div class="w-step" data-step="3">3. Áreas de Impacto</div>
+        </div>
+
+        <div class="wizard-content">
+          <!-- Bloque ASRS (Cribado de Probabilidad) -->
+          <div id="wizard-asrs" class="wizard-section">
+            <h3 class="section-title">Escala de Cribado ASRS v1.1</h3>
+            <p class="section-desc">Por favor, responde con qué frecuencia has experimentado los siguientes síntomas en los últimos 6 meses. (Divulgación Progresiva para evitar fatiga mental).</p>
+            
+            <div id="asrs-question-container">
+              <!-- Cargado dinámicamente en app.js -->
+            </div>
+            
+            <div class="wizard-nav">
+              <span class="question-counter">Pregunta <span id="asrs-current">1</span> de 6</span>
+              <button id="btn-asrs-next" class="btn btn-primary" disabled>Siguiente Pregunta <span class="material-icons">arrow_forward</span></button>
+            </div>
+          </div>
+
+          <!-- Bloque CAMH (Logic Gates) -->
+          <div id="wizard-camh" class="wizard-section hidden">
+            <h3 class="section-title">Marcadores Clínicos CAMH</h3>
+            <p class="section-desc">Evaluación rápida de susceptibilidad biológica e historial cognitivo.</p>
+            
+            <div class="camh-questions-list">
+              <div class="camh-question-row">
+                <div class="camh-question-text">
+                  <h4>1. Historia Familiar</h4>
+                  <p>¿Tienes algún familiar de primer grado (padre, madre, hermanos) diagnosticado con TDAH?</p>
+                </div>
+                <div class="camh-question-options">
+                  <button class="btn-binary" data-key="familyHistory" data-value="yes">Sí</button>
+                  <button class="btn-binary" data-key="familyHistory" data-value="no">No</button>
+                </div>
+              </div>
+
+              <div class="camh-question-row">
+                <div class="camh-question-text">
+                  <h4>2. Respuesta a Estimulantes</h4>
+                  <p>¿Sueles sentir calma o enfoque inusual en lugar de agitación tras consumir cafeína o estimulantes?</p>
+                </div>
+                <div class="camh-question-options">
+                  <button class="btn-binary" data-key="caffeineCalm" data-value="yes">Sí</button>
+                  <button class="btn-binary" data-key="caffeineCalm" data-value="no">No</button>
+                </div>
+              </div>
+
+              <div class="camh-question-row">
+                <div class="camh-question-text">
+                  <h4>3. Memoria de Trabajo</h4>
+                  <p>¿Tienes antecedentes escolares o laborales que sugieran dificultades persistentes de memoria de trabajo?</p>
+                </div>
+                <div class="camh-question-options">
+                  <button class="btn-binary" data-key="workingMemoryLimit" data-value="yes">Sí</button>
+                  <button class="btn-binary" data-key="workingMemoryLimit" data-value="no">No</button>
+                </div>
+              </div>
+
+              <div class="camh-question-row">
+                <div class="camh-question-text">
+                  <h4>4. Diagnóstico Previo en la Infancia</h4>
+                  <p>¿Fuiste evaluado, diagnosticado o recibiste algún tipo de apoyo por inatención en tu niñez?</p>
+                </div>
+                <div class="camh-question-options">
+                  <button class="btn-binary" data-key="childhoodDiagnosis" data-value="yes">Sí</button>
+                  <button class="btn-binary" data-key="childhoodDiagnosis" data-value="no">No</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="wizard-nav mt-8">
+              <button id="btn-camh-prev" class="btn btn-secondary"><span class="material-icons">arrow_back</span> Volver</button>
+              <button id="btn-camh-next" class="btn btn-primary" disabled>Siguiente Paso <span class="material-icons">arrow_forward</span></button>
+            </div>
+          </div>
+
+          <!-- Bloque WFIRS-S (Áreas de impacto funcional / Kryptonita) -->
+          <div id="wizard-wfirs" class="wizard-section hidden">
+            <h3 class="section-title">Áreas de Impacto Funcional (WFIRS-S)</h3>
+            <p class="section-desc">Selecciona cuáles de las siguientes áreas representan mayor "Kryptonita" en tu vida diaria (donde presentas más bloqueos).</p>
+            
+            <div class="wfirs-grid">
+              <div class="wfirs-chip-card" data-area="Trabajo">
+                <span class="material-icons">work</span>
+                <h4>Trabajo / Productividad</h4>
+                <p>Procrastinación de tareas difíciles, despistes y falta de atención a plazos.</p>
+              </div>
+              <div class="wfirs-chip-card" data-area="Finanzas">
+                <span class="material-icons">account_balance_wallet</span>
+                <h4>Negligencia Financiera</h4>
+                <p>Olvidos en facturas, deudas acumuladas o gastos impulsivos.</p>
+              </div>
+              <div class="wfirs-chip-card" data-area="Familia">
+                <span class="material-icons">people</span>
+                <h4>Relaciones y Familia</h4>
+                <p>Conflictos interpersonales, olvidos importantes, hipersensibilidad a críticas.</p>
+              </div>
+              <div class="wfirs-chip-card" data-area="Autonomía">
+                <span class="material-icons">self_improvement</span>
+                <h4>Organización Personal</h4>
+                <p>Desorden en el hogar, dificultad para iniciar el día y rutinas inestables.</p>
+              </div>
+            </div>
+
+            <div class="wizard-nav mt-8">
+              <button id="btn-wfirs-prev" class="btn btn-secondary"><span class="material-icons">arrow_back</span> Volver</button>
+              <button id="btn-wfirs-finish" class="btn btn-emerald">Finalizar y Entrar al Espacio <span class="material-icons">done</span></button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. PANTALLA PRINCIPAL: WORKSPACE / DASHBOARD CLIENTE -->
+    <section id="view-dashboard" class="app-view hidden">
+      <!-- Widgets de Acceso Rápido y Claves de TDAH -->
+      <div class="dashboard-grid">
+        
+        <!-- Tarjeta de Bienvenida y Estado Inicial -->
+        <div class="card card-welcome span-2-cols">
+          <div class="card-content">
+            <span class="badge badge-emerald">Enfoque Activo</span>
+            <h2>Hola, <span id="client-name-display">Alex</span></h2>
+            <p>Hoy es un buen día para avanzar con micro-pasos. Tómalo con calma.</p>
+            
+            <div class="quick-stats-row mt-6">
+              <div class="q-stat">
+                <span class="stat-num" id="stat-tasks-done">0</span>
+                <span class="stat-label">Micro-pasos Completados</span>
+              </div>
+              <div class="q-stat">
+                <span class="stat-num" id="stat-breaths">0</span>
+                <span class="stat-label">Pausas "Parar y Pensar"</span>
+              </div>
+              <div class="q-stat">
+                <span class="stat-num" id="stat-kryptonite-area">-</span>
+                <span class="stat-label">Foco de Acompañamiento</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Acciones Directas de TCC -->
+        <div class="card flex-col flex-justify-between">
+          <h3>Estrategias TCC</h3>
+          <p class="text-muted text-sm mb-4">Usa estas herramientas cuando sientas bloqueo, frustración o parálisis.</p>
+          <div class="d-flex flex-col gap-3">
+            <button id="btn-go-checkin" class="btn btn-primary btn-full-width">
+              <span class="material-icons">sentiment_satisfied</span>
+              Registrar Estado Emocional
+            </button>
+            <button id="btn-go-restructuring" class="btn btn-secondary btn-full-width">
+              <span class="material-icons">psychology</span>
+              Pensamientos Trampa
+            </button>
+          </div>
+        </div>
+
+        <!-- MÓDULO CHUNKING: GESTOR DE TAREAS ANTI-PROCRASTINACIÓN (Sección 4) -->
+        <div class="card span-2-cols">
+          <div class="d-flex flex-justify-between flex-items-center mb-4">
+            <h3>Gestor Anti-Procrastinación (Micro-Pasos)</h3>
+            <span class="material-icons info-trigger" title="Dividir las tareas en pasos ridículamente fáciles combate la parálisis.">help_outline</span>
+          </div>
+
+          <!-- Formulario para agregar Tarea Kryptonita -->
+          <div id="chunking-form-container">
+            <div class="form-group-inline">
+              <input type="text" id="kryptonite-task-input" placeholder="Escribe esa tarea abrumadora (ej: Declarar impuestos del mes)..." class="input-flat">
+              <button id="btn-analyze-task" class="btn btn-primary">Dividir Tarea</button>
+            </div>
+            <p class="text-sm text-amber mt-2 hidden" id="task-length-warning">
+              <span class="material-icons text-sm">warning</span> Esta tarea suena muy grande. Vamos a transformarla en pasos muy pequeños y fáciles.
+            </p>
+          </div>
+
+          <!-- Flujo de División (Chunking Interactive Zone) -->
+          <div id="chunking-steps-container" class="hidden mt-6">
+            <h4 class="text-muted mb-2">Micro-pasos de 10 minutos recomendados:</h4>
+            
+            <ul id="micro-steps-list" class="micro-steps-list">
+              <!-- Elementos dinámicos -->
+            </ul>
+
+            <div class="timer-section mt-6 hidden" id="active-timer-section">
+              <div class="d-flex flex-items-center gap-6">
+                <!-- Temporizador Visual Circular -->
+                <div class="circular-timer-container">
+                  <svg class="timer-svg" viewBox="0 0 100 100">
+                    <circle cx="50" cy="50" r="45" class="timer-bg"></circle>
+                    <circle cx="50" cy="50" r="45" class="timer-progress" id="timer-indicator"></circle>
+                  </svg>
+                  <div class="timer-time" id="timer-text">10:00</div>
+                </div>
+                
+                <div class="timer-controls">
+                  <h5 id="timer-active-task">Paso 1: Abrir el portal</h5>
+                  <p class="text-sm text-muted">Solo enfócate en este micro-paso durante 10 minutos. Olvídate del resto.</p>
+                  <div class="d-flex gap-2 mt-3">
+                    <button id="btn-timer-toggle" class="btn btn-emerald btn-sm">Empezar</button>
+                    <button id="btn-timer-skip" class="btn btn-secondary btn-sm">Listo / Omitir</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- FIDGET ZONE DIGITAL (Sección 6: Mitigación de inquietud motora) -->
+        <div class="card flex-col">
+          <h3>Fidget Zona Calma</h3>
+          <p class="text-muted text-sm mb-4">Haz clic o toca las burbujas para liberar tensión e hiperactividad motora.</p>
+          
+          <div class="fidget-wrapper">
+            <div class="fidget-bubble-wrap" id="fidget-bubble-wrap">
+              <!-- 16 burbujas interactivas -->
+              <div class="bubble"></div><div class="bubble"></div><div class="bubble"></div><div class="bubble"></div>
+              <div class="bubble"></div><div class="bubble"></div><div class="bubble"></div><div class="bubble"></div>
+              <div class="bubble"></div><div class="bubble"></div><div class="bubble"></div><div class="bubble"></div>
+              <div class="bubble"></div><div class="bubble"></div><div class="bubble"></div><div class="bubble"></div>
+            </div>
+            <button id="btn-reset-fidget" class="btn btn-secondary btn-xs mt-3 btn-full-width">Resetear Burbujas</button>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- 3. PANTALLA: REGISTRO EMOCIONAL DIARIO -->
+    <section id="view-checkin" class="app-view hidden">
+      <div class="view-header">
+        <span class="badge badge-clinical">Check-in Clínico</span>
+        <h2>¿Cómo se siente tu mente en este momento?</h2>
+        <p class="subtitle">Un seguimiento honesto te ayudará a identificar detonantes cognitivos.</p>
+      </div>
+
+      <div class="intake-wizard-card">
+        <!-- Paso 1: Intensidad de Síntomas Centrales -->
+        <div class="checkin-step" id="checkin-step-1">
+          <h3>Paso 1: Intensidad de la Emoción</h3>
+          <p class="text-muted text-sm mb-6">Mueve los controles según la intensidad actual. Menos es más calmado.</p>
+          
+          <div class="slider-group">
+            <div class="slider-info">
+              <span>Frustración / Tolerancia baja</span>
+              <span id="val-frustration" class="slider-val">5</span>
+            </div>
+            <input type="range" id="slider-frustration" min="1" max="10" value="5" class="slider-calm">
+          </div>
+
+          <div class="slider-group mt-6">
+            <div class="slider-info">
+              <span>Irritabilidad / Impulso motor</span>
+              <span id="val-irritability" class="slider-val">5</span>
+            </div>
+            <input type="range" id="slider-irritability" min="1" max="10" value="5" class="slider-calm">
+          </div>
+
+          <div class="slider-group mt-6">
+            <div class="slider-info">
+              <span>Sensibilidad a las Críticas</span>
+              <span id="val-sensitivity" class="slider-val">5</span>
+            </div>
+            <input type="range" id="slider-sensitivity" min="1" max="10" value="5" class="slider-calm">
+          </div>
+
+          <div class="wizard-nav mt-10">
+            <button id="btn-checkin-to-dashboard" class="btn btn-secondary">Cancelar</button>
+            <button id="btn-checkin-to-step2" class="btn btn-primary">Siguiente Paso <span class="material-icons">arrow_forward</span></button>
+          </div>
+        </div>
+
+        <!-- Paso 2: Detonantes de TDAH -->
+        <div class="checkin-step hidden" id="checkin-step-2">
+          <h3>Paso 2: ¿Qué causó este estado?</h3>
+          <p class="text-muted text-sm mb-6">Selecciona los detonantes o disparadores asociados con tu TDAH:</p>
+          
+          <div class="detonants-chips-container" id="detonants-container">
+            <div class="chip-detonant" data-detonant="Sobrecarga de tareas">Sobrecarga de tareas</div>
+            <div class="chip-detonant" data-detonant="Interrupciones">Interrupciones frecuentes</div>
+            <div class="chip-detonant" data-detonant="Monotonía">Monotonía / Aburrimiento</div>
+            <div class="chip-detonant" data-detonant="Crítica de terceros">Críticas o comentarios negativos</div>
+            <div class="chip-detonant" data-detonant="Ceguera temporal">Presión de tiempo / Ceguera temporal</div>
+            <div class="chip-detonant" data-detonant="Falta de sueño">Falta de energía / Sueño deficiente</div>
+          </div>
+
+          <div class="form-group mt-6">
+            <label for="checkin-context" class="q-label">Añadir contexto o notas rápidas (opcional):</label>
+            <textarea id="checkin-context" rows="2" placeholder="Ej: Me costó mucho arrancar con el informe y me frustré..." class="input-flat mt-2"></textarea>
+          </div>
+
+          <div class="wizard-nav mt-8">
+            <button id="btn-checkin-back-step1" class="btn btn-secondary"><span class="material-icons">arrow_back</span> Volver</button>
+            <button id="btn-checkin-finish" class="btn btn-emerald">Guardar Registro <span class="material-icons">done</span></button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. PANTALLA: REESTRUCTURACIÓN COGNITIVA -->
+    <section id="view-restructuring" class="app-view hidden">
+      <div class="view-header">
+        <span class="badge badge-clinical">Intervención TCC</span>
+        <h2>Reestructuración Cognitiva Rápida</h2>
+        <p class="subtitle">Las trampas de pensamiento aumentan la procrastinación. Desarmémoslas juntos.</p>
+      </div>
+
+      <div class="restructuring-layout">
+        <!-- Panel Izquierdo: Selección del pensamiento trampa -->
+        <div class="card">
+          <h3>Elige el pensamiento trampa de hoy:</h3>
+          <p class="text-muted text-sm mb-4">Haz clic sobre la creencia negativa que más te esté pesando hoy:</p>
+          
+          <div class="thoughts-list" id="thoughts-list-container">
+            <!-- Cargado dinámicamente en app.js -->
+          </div>
+        </div>
+
+        <!-- Panel Derecho: Proceso interactivo de reencuadre -->
+        <div class="card flex-col flex-justify-between hidden" id="reframe-process-card">
+          <div class="clinical-tag"><span class="material-icons">psychology</span> Modificación de Creencias</div>
+          
+          <div class="reframe-content mt-6">
+            <h4 class="text-amber">Tu pensamiento original:</h4>
+            <blockquote id="original-thought-text" class="thought-quote">"Nunca termino nada."</blockquote>
+            
+            <div class="reframe-guidelines mt-6">
+              <h4>El sesgo de TDAH:</h4>
+              <p id="bias-explanation" class="text-sm text-muted">Este pensamiento es una generalización excesiva. El TDAH te causa bloqueos de inicio, pero no significa que seas incompetente.</p>
+            </div>
+
+            <div class="reframe-result mt-6">
+              <h4 class="text-emerald">Frase alternativa realista y compasiva:</h4>
+              <p id="alternative-thought-text" class="alternative-text">"Algunas tareas me toman más tiempo e intentos que otras, pero he completado muchos proyectos en el pasado y puedo hacerlo paso a paso."</p>
+            </div>
+          </div>
+
+          <div class="mt-8">
+            <button id="btn-apply-reframe" class="btn btn-emerald btn-full-width">Aceptar y Registrar en mi Historial</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. PANTALLA: PANEL DE CONTROL DEL COACH (DASHBOARD CLÍNICO) -->
+    <section id="view-coach" class="app-view hidden">
+      <div class="view-header">
+        <span class="badge badge-clinical">Seguimiento Clínico</span>
+        <h2>Panel de Control para Coaches Especializados</h2>
+        <p class="subtitle">Visualizaciones longitudinales y alertas clínicas basadas en el eToolkit de CADDRA.</p>
+      </div>
+
+      <!-- Métricas y Ficha del Cliente -->
+      <div class="coach-dashboard-layout">
+        
+        <!-- Ficha del Cliente -->
+        <div class="card">
+          <h3>Ficha del Paciente</h3>
+          <hr class="divider">
+          <div class="client-info-list mt-4">
+            <div class="info-item"><strong>Nombre:</strong> <span id="coach-client-name">Alex Marín</span></div>
+            <div class="info-item"><strong>Edad:</strong> <span id="coach-client-age">32 años</span></div>
+            <div class="info-item"><strong>Inicio:</strong> <span id="coach-client-start">2026-06-10</span></div>
+            <div class="info-item"><strong>Foco de Kryptonita:</strong> <span id="coach-client-focus" class="badge badge-amber">Finanzas / Trabajo</span></div>
+          </div>
+
+          <h4 class="mt-8 mb-3">Tasa de Adherencia Clínica</h4>
+          <div class="adherence-chart-bar-container">
+            <div class="adherence-label-row">
+              <span>Uso de Chunking</span>
+              <span id="coach-adh-chunking">85%</span>
+            </div>
+            <div class="progress-bar-bg"><div class="progress-bar-fill" id="bar-adh-chunking" style="width: 85%"></div></div>
+          </div>
+          <div class="adherence-chart-bar-container mt-4">
+            <div class="adherence-label-row">
+              <span>Parar y Pensar (Done)</span>
+              <span id="coach-adh-breathing">75%</span>
+            </div>
+            <div class="progress-bar-bg"><div class="progress-bar-fill" id="bar-adh-breathing" style="width: 75%"></div></div>
+          </div>
+        </div>
+
+        <!-- Gráficos de Tendencias Longitudinales -->
+        <div class="card span-2-cols">
+          <h3>Trazabilidad Longitudinal de Síntomas</h3>
+          <p class="text-sm text-muted mb-4">Registro longitudinal de la severidad del estado emocional (Escala 1-10).</p>
+          
+          <div class="chart-container-wrapper">
+            <!-- Gráfico personalizado con Canvas -->
+            <canvas id="symptomsChart" width="550" height="240"></canvas>
+          </div>
+        </div>
+
+        <!-- Alertas Clínicas (Sección 5: Frustración Crítica, Alert JDQ y Negligencia Financiera) -->
+        <div class="card span-3-cols">
+          <h3>Banderas Rojas y Alertas Clínicas (CADDRA & JDQ)</h3>
+          <p class="text-sm text-muted mb-4">Señales de alerta detectadas automáticamente a través de la interacción de la app.</p>
+          
+          <div class="alerts-list-container" id="coach-alerts-list">
+            <!-- Cargado dinámicamente -->
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- PIE DE PÁGINA -->
+  <footer class="app-footer-bar">
+    <p>FocusFlow cumple con las Guías Prácticas de CADDRA 4.1 y los protocolos de cribado CAMH.</p>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="seedData.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
