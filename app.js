@@ -458,32 +458,40 @@ document.addEventListener("DOMContentLoaded", () => {
     // Chequear retorno de pagos antes de inicializar vistas
     await checkPaymentReturn();
 
-    const profile = await apiGet('/api/profile');
-    if (profile && profile.completedIntake) {
-      appState.userProfile = profile;
+    // 1. Si el cliente ya completó el intake localmente, confiar e ir directo al Dashboard
+    if (appState.userProfile.completedIntake) {
       document.getElementById("client-name-display").innerText = appState.userProfile.name;
       const area = appState.userProfile.kryptoniteArea ? appState.userProfile.kryptoniteArea.split(", ")[0] : "Autonomía";
       document.getElementById("stat-kryptonite-area").innerText = area;
       document.getElementById("stat-breaths").innerText = appState.userProfile.breathsDone || 0;
       showView("dashboard");
+
+      // Sincronizar en segundo plano con el servidor
+      apiGet('/api/profile').then(profile => {
+        if (!profile || !profile.completedIntake) {
+          apiPost('/api/profile', {
+            name: appState.userProfile.name,
+            country: appState.userProfile.country || 'ARG',
+            kryptoniteArea: appState.userProfile.kryptoniteArea,
+            asrsScore: appState.userProfile.asrsScore,
+            camhAlerts: appState.userProfile.camhAlerts,
+            intakeData: appState.intakeData
+          });
+        }
+      });
     } else {
-      // Si el cliente ya completó el intake localmente, sincronizarlo al servidor
-      if (appState.userProfile.completedIntake) {
-        await apiPost('/api/profile', {
-          name: appState.userProfile.name,
-          country: appState.userProfile.country || 'ARG',
-          kryptoniteArea: appState.userProfile.kryptoniteArea,
-          asrsScore: appState.userProfile.asrsScore,
-          camhAlerts: appState.userProfile.camhAlerts,
-          intakeData: appState.intakeData
-        });
-        
+      // 2. Si no está local, intentar recuperar del servidor
+      const profile = await apiGet('/api/profile');
+      if (profile && profile.completedIntake) {
+        appState.userProfile = profile;
         document.getElementById("client-name-display").innerText = appState.userProfile.name;
         const area = appState.userProfile.kryptoniteArea ? appState.userProfile.kryptoniteArea.split(", ")[0] : "Autonomía";
         document.getElementById("stat-kryptonite-area").innerText = area;
         document.getElementById("stat-breaths").innerText = appState.userProfile.breathsDone || 0;
+        saveState();
         showView("dashboard");
       } else {
+        // Ninguno tiene registro, mostrar onboarding
         showView("intake");
         renderAsrsQuestion();
       }
