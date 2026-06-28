@@ -462,7 +462,8 @@ document.addEventListener("DOMContentLoaded", () => {
     if (profile && profile.completedIntake) {
       appState.userProfile = profile;
       document.getElementById("client-name-display").innerText = appState.userProfile.name;
-      document.getElementById("stat-kryptonite-area").innerText = appState.userProfile.kryptoniteArea.split(", ")[0];
+      const area = appState.userProfile.kryptoniteArea ? appState.userProfile.kryptoniteArea.split(", ")[0] : "Autonomía";
+      document.getElementById("stat-kryptonite-area").innerText = area;
       document.getElementById("stat-breaths").innerText = appState.userProfile.breathsDone || 0;
       showView("dashboard");
     } else {
@@ -478,7 +479,8 @@ document.addEventListener("DOMContentLoaded", () => {
         });
         
         document.getElementById("client-name-display").innerText = appState.userProfile.name;
-        document.getElementById("stat-kryptonite-area").innerText = appState.userProfile.kryptoniteArea.split(", ")[0];
+        const area = appState.userProfile.kryptoniteArea ? appState.userProfile.kryptoniteArea.split(", ")[0] : "Autonomía";
+        document.getElementById("stat-kryptonite-area").innerText = area;
         document.getElementById("stat-breaths").innerText = appState.userProfile.breathsDone || 0;
         showView("dashboard");
       } else {
@@ -888,7 +890,8 @@ document.addEventListener("DOMContentLoaded", () => {
     // 1. Ficha del Paciente y Adherencia
     if (data.userProfile) {
       document.getElementById("coach-client-name").innerText = data.userProfile.name;
-      document.getElementById("coach-client-focus").innerText = data.userProfile.kryptoniteArea.split(", ")[0];
+      const focus = data.userProfile.kryptoniteArea ? data.userProfile.kryptoniteArea.split(", ")[0] : "Autonomía";
+      document.getElementById("coach-client-focus").innerText = focus;
     }
     
     // Tasa de Chunking
