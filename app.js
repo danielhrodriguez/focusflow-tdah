@@ -126,6 +126,14 @@ document.addEventListener("DOMContentLoaded", () => {
   const paymentSuccessModal = document.getElementById("payment-success-modal");
   const btnClosePaymentModal = document.getElementById("btn-close-payment-modal");
   const premiumStatusArea = document.getElementById("premium-status-area");
+  
+  // Elementos del Simulador Visual de Mercado Pago
+  const checkoutSimulationModal = document.getElementById("checkout-simulation-modal");
+  const btnCloseSimModal = document.getElementById("btn-close-sim-modal");
+  const simPlanTitle = document.getElementById("sim-plan-title");
+  const simPlanPrice = document.getElementById("sim-plan-price");
+  const simPaymentForm = document.getElementById("sim-payment-form");
+  const btnSubmitSimPayment = document.getElementById("btn-submit-sim-payment");
 
   // ==========================================
   // HELPERS DE CONEXIÓN CON EXPRESS (BACKEND)
@@ -1162,6 +1170,8 @@ document.addEventListener("DOMContentLoaded", () => {
     updatePremiumUI();
   }
 
+  let pendingSimPlan = null;
+
   async function handleSubscription(plan, buttonEl) {
     buttonEl.innerText = "Cargando...";
     buttonEl.setAttribute("disabled", "true");
@@ -1175,20 +1185,64 @@ document.addEventListener("DOMContentLoaded", () => {
     if (res && res.init_point) {
       window.location.href = res.init_point;
     } else if (res && res.simulated_url) {
-      const confirmSim = confirm(
-        "Mercado Pago está en modo Sandbox sin credenciales reales de producción configuradas.\n\n" +
-        "¿Deseas simular un pago aprobado automáticamente para probar las funciones de este plan?"
-      );
-      if (confirmSim) {
-        // Activar premium en el backend de forma asíncrona
-        apiPost('/api/profile/premium', { plan });
+      // Guardar plan pendiente para la simulación
+      pendingSimPlan = plan;
+      
+      // Personalizar datos del plan en el simulador
+      if (simPlanTitle && simPlanPrice) {
+        simPlanTitle.innerText = plan === 'app' ? 'Plan Auto-Guía' : 'Plan Coach Premium';
+        simPlanPrice.innerText = plan === 'app' ? '$1.500 ARS' : '$7.500 ARS';
+      }
+
+      // Abrir modal de simulación de pasarela
+      if (checkoutSimulationModal) {
+        checkoutSimulationModal.classList.remove("hidden");
+      }
+    } else {
+      alert("No se pudo iniciar el pago con Mercado Pago. Por favor intenta de nuevo.");
+    }
+  }
+
+  // Cerrar el modal del simulador
+  if (btnCloseSimModal) {
+    btnCloseSimModal.addEventListener("click", () => {
+      if (checkoutSimulationModal) {
+        checkoutSimulationModal.classList.add("hidden");
+      }
+    });
+  }
+
+  // Procesar formulario de tarjeta simulada
+  if (simPaymentForm) {
+    simPaymentForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      
+      if (!btnSubmitSimPayment) return;
+      btnSubmitSimPayment.innerText = "Procesando pago en Mercado Pago...";
+      btnSubmitSimPayment.setAttribute("disabled", "true");
+
+      // Simular un delay de pasarela bancaria de 1.5 segundos
+      setTimeout(async () => {
+        const plan = pendingSimPlan || 'coach';
         
-        // Activar premium localmente al instante sin recargar la página
+        // Activar premium en el backend de forma asíncrona
+        await apiPost('/api/profile/premium', { plan });
+        
+        // Activar premium localmente
         appState.userProfile.premium = true;
         appState.userProfile.premiumPlan = plan;
         saveState();
         updatePremiumUI();
         
+        // Restaurar estado del botón
+        btnSubmitSimPayment.innerText = "Pagar con Mercado Pago";
+        btnSubmitSimPayment.removeAttribute("disabled");
+
+        // Ocultar pasarela simulada
+        if (checkoutSimulationModal) {
+          checkoutSimulationModal.classList.add("hidden");
+        }
+
         // Mostrar modal de éxito
         if (paymentSuccessModal) {
           const isCoach = plan === 'coach';
@@ -1198,10 +1252,8 @@ document.addEventListener("DOMContentLoaded", () => {
             : "Tu pago en Mercado Pago ha sido aprobado. Todas las funciones de la aplicación han sido desbloqueadas.";
           paymentSuccessModal.classList.remove("hidden");
         }
-      }
-    } else {
-      alert("No se pudo iniciar el pago con Mercado Pago. Por favor intenta de nuevo.");
-    }
+      }, 1500);
+    });
   }
 
   if (btnSubscribeApp) {
