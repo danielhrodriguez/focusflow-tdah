@@ -13,7 +13,9 @@ document.addEventListener("DOMContentLoaded", () => {
       asrsScore: 0,
       camhAlerts: 0,
       breathsDone: 0,
-      premium: false
+      premium: false,
+      country: "ARG",
+      premiumPlan: null
     },
     intakeData: {
       asrsAnswers: [],
@@ -407,13 +409,18 @@ document.addEventListener("DOMContentLoaded", () => {
     appState.intakeData.camhAnswers = camhAnswers;
     appState.intakeData.wfirsAreas = selectedWfirsAreas;
     
+    const inputName = document.getElementById("intake-name-input").value.trim();
+    const selectCountry = document.getElementById("intake-country-select").value;
+
+    appState.userProfile.name = inputName || "Alex Marín";
+    appState.userProfile.country = selectCountry;
     appState.userProfile.kryptoniteArea = selectedWfirsAreas.length > 0 ? selectedWfirsAreas.join(", ") : "Autonomía";
     appState.userProfile.completedIntake = true;
-    appState.userProfile.name = "Alex Marín";
 
     // Enviar datos al Servidor Express
     await apiPost('/api/profile', {
       name: appState.userProfile.name,
+      country: appState.userProfile.country,
       kryptoniteArea: appState.userProfile.kryptoniteArea,
       asrsScore: appState.userProfile.asrsScore,
       camhAlerts: appState.userProfile.camhAlerts,
@@ -1057,18 +1064,29 @@ document.addEventListener("DOMContentLoaded", () => {
       const plan = appState.userProfile.premiumPlan || 'coach';
       const isCoach = plan === 'coach';
       
+      const coachProfiles = {
+        ARG: { name: "Lic. Martina Silva", phone: "5491122334455", email: "msilva.coach@focusflow.com" },
+        MEX: { name: "Lic. Javier Ruiz", phone: "5215512345678", email: "jruiz.coach@focusflow.com" },
+        ESP: { name: "Lic. Laura Gómez", phone: "34612345678", email: "lgomez.coach@focusflow.com" },
+        COL: { name: "Lic. Andrés Felipe", phone: "573001234567", email: "afelipe.coach@focusflow.com" },
+        OTHER: { name: "Lic. Clara Medina (Internacional)", phone: "5491199887766", email: "cmedina.coach@focusflow.com" }
+      };
+
       if (premiumStatusArea) {
         if (isCoach) {
+          const country = appState.userProfile.country || 'ARG';
+          const coach = coachProfiles[country] || coachProfiles.OTHER;
+          
           premiumStatusArea.innerHTML = `
             <span class="badge badge-emerald" style="background-color: rgba(245, 158, 11, 0.15); color: #f59e0b; padding: 6px 12px; border-radius: 9999px; font-size: 0.75rem; font-weight: 700; display: inline-block;">PLAN COACH PREMIUM ACTIVO</span>
-            <p class="text-sm mt-2 text-muted" style="font-size: 0.75rem; line-height: 1.3;">Sincronización de panel activa. Ponte en contacto con tu Coach asignado:</p>
+            <p class="text-sm mt-2 text-muted" style="font-size: 0.75rem; line-height: 1.3;">Asignado a: <strong>${coach.name}</strong>. Sincronización de panel activa. Ponte en contacto:</p>
             
             <div class="d-flex flex-col gap-2 mt-3">
-              <a href="https://wa.me/5491122334455?text=Hola,%20soy%20tu%20paciente%20de%20FocusFlow.%20Acabo%20de%20activar%20mi%20Plan%20Premium." target="_blank" class="btn btn-xs btn-primary btn-full-width" style="background-color: #25d366; border: none; display: flex; align-items: center; justify-content: center; gap: 5px; padding: 6px 0; font-weight: 600; color: #fff; border-radius: 6px;">
-                <span class="material-icons" style="font-size: 1rem;">chat</span> WhatsApp del Coach
+              <a href="https://wa.me/${coach.phone}?text=Hola%20${encodeURIComponent(coach.name)},%20soy%20tu%20paciente%20de%20FocusFlow%20y%20acabo%20de%20adquirir%20mi%20Plan%20Premium." target="_blank" class="btn btn-xs btn-primary btn-full-width" style="background-color: #25d366; border: none; display: flex; align-items: center; justify-content: center; gap: 5px; padding: 6px 0; font-weight: 600; color: #fff; border-radius: 6px;">
+                <span class="material-icons" style="font-size: 1rem;">chat</span> WhatsApp de ${coach.name.split(" ")[1]}
               </a>
-              <a href="mailto:coach@focusflow.com?subject=FocusFlow%20Acompañamiento%20Paciente" class="btn btn-xs btn-secondary btn-full-width" style="display: flex; align-items: center; justify-content: center; gap: 5px; padding: 6px 0; font-weight: 600; border-radius: 6px;">
-                <span class="material-icons" style="font-size: 1rem;">mail</span> Enviar Correo al Coach
+              <a href="mailto:${coach.email}?subject=FocusFlow%20Acompañamiento%20Paciente" class="btn btn-xs btn-secondary btn-full-width" style="display: flex; align-items: center; justify-content: center; gap: 5px; padding: 6px 0; font-weight: 600; border-radius: 6px;">
+                <span class="material-icons" style="font-size: 1rem;">mail</span> Enviar Correo
               </a>
             </div>
           `;

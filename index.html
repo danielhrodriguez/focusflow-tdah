@@ -211,6 +211,27 @@
               </div>
             </div>
 
+            <!-- Datos de Perfil Clínico -->
+            <div class="profile-setup-box mt-8" style="padding-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.05); text-align: left;">
+              <h4 style="margin-bottom: 1rem; color: var(--color-text-primary);">Configuración de tu Perfil</h4>
+              <div class="d-flex flex-col gap-4">
+                <div class="form-group flex-col d-flex">
+                  <label for="intake-name-input" class="text-sm text-muted mb-2">Escribe tu Nombre:</label>
+                  <input type="text" id="intake-name-input" placeholder="Ej: Alex Marín" class="input-flat" style="width: 100%; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.2); padding: 10px; border-radius: 6px;" value="Alex Marín">
+                </div>
+                <div class="form-group flex-col d-flex">
+                  <label for="intake-country-select" class="text-sm text-muted mb-2">Selecciona tu País (para asignación del Coach de tu región):</label>
+                  <select id="intake-country-select" class="input-flat" style="width: 100%; background: #1e293b; color: #fff; padding: 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1);">
+                    <option value="ARG">Argentina</option>
+                    <option value="MEX">México</option>
+                    <option value="ESP">España</option>
+                    <option value="COL">Colombia</option>
+                    <option value="OTHER">Otro (Internacional)</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
             <div class="wizard-nav mt-8">
               <button id="btn-wfirs-prev" class="btn btn-secondary"><span class="material-icons">arrow_back</span> Volver</button>
               <button id="btn-wfirs-finish" class="btn btn-emerald">Finalizar y Entrar al Espacio <span class="material-icons">done</span></button>
