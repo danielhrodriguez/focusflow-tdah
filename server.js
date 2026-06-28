@@ -245,7 +245,7 @@ app.post('/api/checkout/mercadopago', async (req, res) => {
     console.warn("Mercado Pago falló o no está configurado (redireccionando a simulador):", error.message);
     
     // Retornar error de configuración pero adjuntar la URL de simulación de éxito para confirmación del cliente
-    res.status(400).json({ 
+    res.json({ 
       error: "Credenciales de Mercado Pago no configuradas o inválidas", 
       details: error.message,
       simulated_url: `${host}/?payment=success&plan=${plan}`
