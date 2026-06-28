@@ -1,5 +1,6 @@
 // Lógica de Control FocusFlow (Acompañante de TDAH en Adultos) - Versión Fullstack
 document.addEventListener("DOMContentLoaded", () => {
+  console.log("FocusFlow App v1.0.5 cargada correctamente.");
   
   // ==========================================
   // ESTADO GLOBAL DE LA APLICACIÓN
