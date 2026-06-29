@@ -203,6 +203,12 @@ document.addEventListener("DOMContentLoaded", () => {
   // ENRUTADOR DE VISTAS (SPA Routing)
   // ==========================================
   function showView(viewName) {
+    const token = localStorage.getItem("focusflow_auth_token");
+    if (!token && viewName !== "welcome") {
+      // Route Guard: Evitar navegación a cualquier pantalla si no está autenticado
+      viewName = "welcome";
+    }
+
     if (viewName !== "dashboard") {
       pauseTimer();
     }
@@ -219,27 +225,36 @@ document.addEventListener("DOMContentLoaded", () => {
       bcRoot.innerText = "FocusFlow";
       bcCurrent.innerText = "Bienvenida";
       if (btnLogout) btnLogout.classList.add("hidden");
-    } else if (viewName === "intake") {
-      bcRoot.innerText = "FocusFlow";
-      bcCurrent.innerText = "Onboarding";
-      if (btnLogout) btnLogout.classList.remove("hidden");
-    } else if (viewName === "dashboard") {
-      bcRoot.innerText = "Espacio Personal";
-      bcCurrent.innerText = "Workspace";
-      if (btnLogout) btnLogout.classList.remove("hidden");
-    } else if (viewName === "checkin") {
-      bcRoot.innerText = "Espacio Personal";
-      bcCurrent.innerText = "Check-in Emocional";
-      if (btnLogout) btnLogout.classList.remove("hidden");
-    } else if (viewName === "restructuring") {
-      bcRoot.innerText = "Espacio Personal";
-      bcCurrent.innerText = "TCC: Pensamiento Trampa";
-      if (btnLogout) btnLogout.classList.remove("hidden");
-    } else if (viewName === "coach") {
-      bcRoot.innerText = "Área Clínica";
-      bcCurrent.innerText = "Dashboard Coach";
-      if (btnLogout) btnLogout.classList.remove("hidden");
-      loadCoachDashboard();
+      const roleSelector = document.querySelector(".role-selector");
+      if (roleSelector) roleSelector.classList.add("hidden");
+      const btnQuickFidget = document.getElementById("btn-quick-fidget");
+      if (btnQuickFidget) btnQuickFidget.classList.add("hidden");
+    } else {
+      const btnQuickFidget = document.getElementById("btn-quick-fidget");
+      if (btnQuickFidget) btnQuickFidget.classList.remove("hidden");
+      
+      if (viewName === "intake") {
+        bcRoot.innerText = "FocusFlow";
+        bcCurrent.innerText = "Onboarding";
+        if (btnLogout) btnLogout.classList.remove("hidden");
+      } else if (viewName === "dashboard") {
+        bcRoot.innerText = "Espacio Personal";
+        bcCurrent.innerText = "Workspace";
+        if (btnLogout) btnLogout.classList.remove("hidden");
+      } else if (viewName === "checkin") {
+        bcRoot.innerText = "Espacio Personal";
+        bcCurrent.innerText = "Check-in Emocional";
+        if (btnLogout) btnLogout.classList.remove("hidden");
+      } else if (viewName === "restructuring") {
+        bcRoot.innerText = "Espacio Personal";
+        bcCurrent.innerText = "TCC: Pensamiento Trampa";
+        if (btnLogout) btnLogout.classList.remove("hidden");
+      } else if (viewName === "coach") {
+        bcRoot.innerText = "Área Clínica";
+        bcCurrent.innerText = "Dashboard Coach";
+        if (btnLogout) btnLogout.classList.remove("hidden");
+        loadCoachDashboard();
+      }
     }
     
     window.scrollTo({ top: 0, behavior: 'smooth' });
