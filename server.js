@@ -17,7 +17,6 @@ app.use(express.static(__dirname));
 // ==========================================
 // CONFIGURACIÓN DE MERCADO PAGO (SANDBOX)
 // ==========================================
-// Reemplazar con tu Access Token de producción o Sandbox en Render a través de variables de entorno
 const MP_TOKEN = process.env.MP_ACCESS_TOKEN || 'TEST-3398495045051910-062818-47a3e7efcd316d3f23a9689e47f7dcd1-12345678';
 const client = new MercadoPagoConfig({ accessToken: MP_TOKEN });
 
@@ -25,29 +24,41 @@ const client = new MercadoPagoConfig({ accessToken: MP_TOKEN });
 // CONTROLADOR DE BASE DE DATOS LOCAL (db.json)
 // ==========================================
 const defaultData = {
-  userProfile: {
-    name: "Invitado",
-    completedIntake: false,
-    kryptoniteArea: "Pendiente",
-    asrsScore: 0,
-    camhAlerts: 0,
-    breathsDone: 0,
-    premium: false
+  users: {
+    "paciente@focusflow.com": {
+      password: "123",
+      profile: {
+        name: "Alex Marín",
+        completedIntake: true,
+        kryptoniteArea: "Finanzas / Trabajo",
+        asrsScore: 18,
+        camhAlerts: 1,
+        breathsDone: 4,
+        premium: false,
+        country: "ARG",
+        premiumPlan: null
+      },
+      intakeData: {
+        asrsAnswers: [2, 3, 2, 4, 3, 3],
+        camhAnswers: {},
+        wfirsAreas: ["Finanzas", "Trabajo"]
+      },
+      dailyLogs: [
+        { date: "Lun", frustration: 4, irritability: 3 },
+        { date: "Mar", frustration: 5, irritability: 2 },
+        { date: "Mié", frustration: 3, irritability: 4 }
+      ],
+      adherenceMetrics: {
+        tasksCreated: 10,
+        tasksDivided: 4,
+        tasksCompleted: 8,
+        breathingExercisesDone: 4,
+        cognitiveRestructurings: 1,
+        premiumUnlocked: false
+      }
+    }
   },
-  intakeData: {
-    asrsAnswers: [],
-    camhAnswers: {},
-    wfirsAreas: []
-  },
-  dailyLogs: [],
-  adherenceMetrics: {
-    tasksCreated: 0,
-    tasksDivided: 0,
-    tasksCompleted: 0,
-    breathingExercisesDone: 0,
-    cognitiveRestructurings: 0,
-    premiumUnlocked: false
-  }
+  sessions: {}
 };
 
 function readDatabase() {
@@ -57,7 +68,27 @@ function readDatabase() {
   }
   try {
     const raw = fs.readFileSync(DB_FILE, 'utf8');
-    return JSON.parse(raw);
+    const parsed = JSON.parse(raw);
+    
+    // Si la base de datos es la vieja (no tiene "users" o "sessions"), migrarla
+    if (!parsed.users || !parsed.sessions) {
+      console.log("Migrando base de datos de estructura antigua a multi-usuario...");
+      const migrated = {
+        users: {
+          "paciente@focusflow.com": {
+            password: "123",
+            profile: parsed.userProfile || defaultData.users["paciente@focusflow.com"].profile,
+            intakeData: parsed.intakeData || defaultData.users["paciente@focusflow.com"].intakeData,
+            dailyLogs: parsed.dailyLogs || defaultData.users["paciente@focusflow.com"].dailyLogs,
+            adherenceMetrics: parsed.adherenceMetrics || defaultData.users["paciente@focusflow.com"].adherenceMetrics
+          }
+        },
+        sessions: {}
+      };
+      writeDatabase(migrated);
+      return migrated;
+    }
+    return parsed;
   } catch (e) {
     console.error("Error leyendo db.json, usando valores por defecto", e);
     return defaultData;
@@ -73,87 +104,192 @@ function writeDatabase(data) {
 }
 
 // ==========================================
-// ENDPOINTS DE LA API REST
+// MIDDLEWARE DE AUTENTICACIÓN
+// ==========================================
+function authenticateToken(req, res, next) {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1]; // Bearer <token>
+
+  if (!token) {
+    return res.status(401).json({ error: "Token de sesión no provisto" });
+  }
+
+  const db = readDatabase();
+  const username = db.sessions[token];
+  if (!username || !db.users[username]) {
+    return res.status(401).json({ error: "Sesión inválida o expirada" });
+  }
+
+  req.username = username;
+  req.user = db.users[username];
+  next();
+}
+
+// ==========================================
+// ENDPOINTS DE AUTENTICACIÓN
+// ==========================================
+
+// Registrar nuevo usuario
+app.post('/api/auth/register', (req, res) => {
+  const { username, password } = req.body;
+  if (!username || !password) {
+    return res.status(400).json({ error: "Usuario y contraseña requeridos" });
+  }
+  
+  const db = readDatabase();
+  if (db.users[username]) {
+    return res.status(400).json({ error: "El usuario ya existe" });
+  }
+
+  // Inicializar el usuario
+  db.users[username] = {
+    password: password,
+    profile: {
+      name: "Invitado",
+      completedIntake: false,
+      kryptoniteArea: "Pendiente",
+      asrsScore: 0,
+      camhAlerts: 0,
+      breathsDone: 0,
+      premium: false,
+      country: "ARG",
+      premiumPlan: null
+    },
+    intakeData: {
+      asrsAnswers: [],
+      camhAnswers: {},
+      wfirsAreas: []
+    },
+    dailyLogs: [],
+    adherenceMetrics: {
+      tasksCreated: 0,
+      tasksDivided: 0,
+      tasksCompleted: 0,
+      breathingExercisesDone: 0,
+      cognitiveRestructurings: 0,
+      premiumUnlocked: false
+    }
+  };
+
+  // Crear sesión
+  const token = 'token_' + Math.random().toString(36).substr(2, 9);
+  db.sessions[token] = username;
+  writeDatabase(db);
+
+  res.json({ success: true, token, profile: db.users[username].profile });
+});
+
+// Iniciar sesión
+app.post('/api/auth/login', (req, res) => {
+  const { username, password } = req.body;
+  const db = readDatabase();
+  const user = db.users[username];
+
+  if (!user || user.password !== password) {
+    return res.status(400).json({ error: "Usuario o contraseña incorrectos" });
+  }
+
+  const token = 'token_' + Math.random().toString(36).substr(2, 9);
+  db.sessions[token] = username;
+  writeDatabase(db);
+
+  res.json({ success: true, token, profile: user.profile });
+});
+
+// Cerrar sesión
+app.post('/api/auth/logout', (req, res) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+  if (token) {
+    const db = readDatabase();
+    delete db.sessions[token];
+    writeDatabase(db);
+  }
+  res.json({ success: true });
+});
+
+
+// ==========================================
+// ENDPOINTS DE LA API REST (PROTEGIDOS)
 // ==========================================
 
 // 1. Obtener perfil
-app.get('/api/profile', (req, res) => {
-  const db = readDatabase();
-  res.json(db.userProfile);
+app.get('/api/profile', authenticateToken, (req, res) => {
+  res.json(req.user.profile);
 });
 
 // 2. Guardar perfil (Fin de Onboarding)
-app.post('/api/profile', (req, res) => {
+app.post('/api/profile', authenticateToken, (req, res) => {
   const db = readDatabase();
-  db.userProfile = {
-    ...db.userProfile,
+  db.users[req.username].profile = {
+    ...db.users[req.username].profile,
     ...req.body,
     completedIntake: true
   };
   
   if (req.body.intakeData) {
-    db.intakeData = req.body.intakeData;
+    db.users[req.username].intakeData = req.body.intakeData;
   }
 
   writeDatabase(db);
-  res.json({ success: true, profile: db.userProfile });
+  res.json({ success: true, profile: db.users[req.username].profile });
 });
 
-// Activar Premium directamente (retorno exitoso de pasarela)
-app.post('/api/profile/premium', (req, res) => {
+// Activar Premium directamente (retorno exitoso de pasarela o simulador)
+app.post('/api/profile/premium', authenticateToken, (req, res) => {
   const db = readDatabase();
-  db.userProfile.premium = true;
-  db.userProfile.premiumPlan = req.body.plan || 'coach';
-  db.adherenceMetrics.premiumUnlocked = true;
+  db.users[req.username].profile.premium = true;
+  db.users[req.username].profile.premiumPlan = req.body.plan || 'coach';
+  db.users[req.username].adherenceMetrics.premiumUnlocked = true;
   writeDatabase(db);
-  res.json({ success: true, profile: db.userProfile });
+  res.json({ success: true, profile: db.users[req.username].profile });
 });
 
 // 3. Obtener registros de humor diarios
-app.get('/api/logs', (req, res) => {
-  const db = readDatabase();
-  res.json(db.dailyLogs);
+app.get('/api/logs', authenticateToken, (req, res) => {
+  res.json(req.user.dailyLogs);
 });
 
 // 4. Agregar check-in de humor diario
-app.post('/api/logs', (req, res) => {
+app.post('/api/logs', authenticateToken, (req, res) => {
   const db = readDatabase();
   const newLog = {
     ...req.body,
     timestamp: Date.now()
   };
 
-  db.dailyLogs.unshift(newLog);
+  db.users[req.username].dailyLogs.unshift(newLog);
   
   if (newLog.frustration >= 8) {
-    db.userProfile.breathsDone = (db.userProfile.breathsDone || 0) + 1;
-    db.adherenceMetrics.breathingExercisesDone = (db.adherenceMetrics.breathingExercisesDone || 0) + 1;
+    db.users[req.username].profile.breathsDone = (db.users[req.username].profile.breathsDone || 0) + 1;
+    db.users[req.username].adherenceMetrics.breathingExercisesDone = (db.users[req.username].adherenceMetrics.breathingExercisesDone || 0) + 1;
   }
 
   writeDatabase(db);
-  res.json({ success: true, log: newLog, breathsDone: db.userProfile.breathsDone });
+  res.json({ success: true, log: newLog, breathsDone: db.users[req.username].profile.breathsDone });
 });
 
 // 5. Actualizar métricas de adherencia (Micro-hábitos, TCC)
-app.post('/api/adherence', (req, res) => {
+app.post('/api/adherence', authenticateToken, (req, res) => {
   const db = readDatabase();
   const { metric } = req.body;
+  const user = db.users[req.username];
   
-  if (db.adherenceMetrics[metric] !== undefined) {
-    db.adherenceMetrics[metric]++;
+  if (user.adherenceMetrics[metric] !== undefined) {
+    user.adherenceMetrics[metric]++;
     if (metric === 'breathingExercisesDone') {
-      db.userProfile.breathsDone = (db.userProfile.breathsDone || 0) + 1;
+      user.profile.breathsDone = (user.profile.breathsDone || 0) + 1;
     }
     writeDatabase(db);
-    res.json({ success: true, metrics: db.adherenceMetrics });
+    res.json({ success: true, metrics: user.adherenceMetrics });
   } else {
     res.status(400).json({ error: "Métrica inválida" });
   }
 });
 
 // 6. Endpoint consolidado para el Coach Dashboard (Gráficos + Alertas)
-app.get('/api/coach/dashboard', (req, res) => {
-  const db = readDatabase();
+app.get('/api/coach/dashboard', authenticateToken, (req, res) => {
+  const user = req.user;
   
   const defaultAlerts = [
     {
@@ -172,8 +308,8 @@ app.get('/api/coach/dashboard', (req, res) => {
 
   const liveAlerts = [];
   
-  if (db.dailyLogs.length >= 3) {
-    const last3 = db.dailyLogs.slice(0, 3);
+  if (user.dailyLogs.length >= 3) {
+    const last3 = user.dailyLogs.slice(0, 3);
     const frusts = last3.map(l => l.frustration);
     if (frusts.every(f => f >= 7)) {
       liveAlerts.push({
@@ -183,29 +319,29 @@ app.get('/api/coach/dashboard', (req, res) => {
         date: "Hoy"
       });
     }
-  } else if (db.dailyLogs.length > 0 && db.dailyLogs[0].frustration >= 8) {
+  } else if (user.dailyLogs.length > 0 && user.dailyLogs[0].frustration >= 8) {
     liveAlerts.push({
       type: "Pico de Impulsividad",
-      message: "El usuario registró frustración extrema de " + db.dailyLogs[0].frustration + " hoy.",
+      message: "El usuario registró frustración extrema de " + user.dailyLogs[0].frustration + " hoy.",
       severity: "critical",
       date: "Hoy"
     });
   }
 
   res.json({
-    userProfile: db.userProfile,
-    dailyLogs: db.dailyLogs,
-    adherenceMetrics: db.adherenceMetrics,
+    userProfile: user.profile,
+    dailyLogs: user.dailyLogs,
+    adherenceMetrics: user.adherenceMetrics,
     alerts: [...liveAlerts, ...defaultAlerts]
   });
 });
 
 // ==========================================
-// ENDPOINTS MERCADO PAGO
+// ENDPOINTS MERCADO PAGO (PROTEGIDO)
 // ==========================================
 
 // 1. Crear Preferencia de Pago
-app.post('/api/checkout/mercadopago', async (req, res) => {
+app.post('/api/checkout/mercadopago', authenticateToken, async (req, res) => {
   const host = req.body.host || `http://localhost:${PORT}`;
   const plan = req.body.plan || 'coach';
   const isApp = plan === 'app';
@@ -221,6 +357,7 @@ app.post('/api/checkout/mercadopago', async (req, res) => {
     const preference = new Preference(client);
     const response = await preference.create({
       body: {
+        external_reference: req.username, // Email/Usuario para relacionarlo en el webhook
         items: [
           {
             id: isApp ? 'plan-app-only' : 'plan-coach-premium',
@@ -253,7 +390,7 @@ app.post('/api/checkout/mercadopago', async (req, res) => {
   }
 });
 
-// 2. Webhook / Notificación IPN (IPN Listener)
+// 2. Webhook / Notificación IPN
 app.post('/api/webhook/mercadopago', (req, res) => {
   const { query } = req;
   const topic = query.topic || query.type;
@@ -262,12 +399,16 @@ app.post('/api/webhook/mercadopago', (req, res) => {
     const paymentId = query.id || query['data.id'];
     console.log(`[Webhook] Notificación de pago recibida. ID: ${paymentId}`);
     
-    // Automatizar la aprobación del premium en el backend local
-    const db = readDatabase();
-    db.userProfile.premium = true;
-    db.adherenceMetrics.premiumUnlocked = true;
-    writeDatabase(db);
-    console.log(`[Webhook] Suscripción Premium activada con éxito en db.json.`);
+    const userEmail = query.external_reference || req.body.external_reference;
+    if (userEmail) {
+      const db = readDatabase();
+      if (db.users[userEmail]) {
+        db.users[userEmail].profile.premium = true;
+        db.users[userEmail].adherenceMetrics.premiumUnlocked = true;
+        writeDatabase(db);
+        console.log(`[Webhook] Suscripción Premium activada para ${userEmail}.`);
+      }
+    }
   }
 
   res.sendStatus(200);

@@ -46,12 +46,31 @@ document.addEventListener("DOMContentLoaded", () => {
   // CONSULTAS AL DOM CENTRALIZADAS (Evita Temporal Dead Zone)
   // ==========================================
   const views = {
+    welcome: document.getElementById("view-welcome"),
     intake: document.getElementById("view-intake"),
     dashboard: document.getElementById("view-dashboard"),
     checkin: document.getElementById("view-checkin"),
     restructuring: document.getElementById("view-restructuring"),
     coach: document.getElementById("view-coach")
   };
+
+  // Selectores de Autenticación
+  const tabLoginBtn = document.getElementById("tab-login-btn");
+  const tabRegisterBtn = document.getElementById("tab-register-btn");
+  const formLogin = document.getElementById("form-login");
+  const formRegister = document.getElementById("form-register");
+  const authErrorMessage = document.getElementById("auth-error-message");
+  const btnLogout = document.getElementById("btn-logout");
+
+  // Selectores de Modales de Términos y Privacidad
+  const modalTerms = document.getElementById("modal-terms");
+  const modalPrivacy = document.getElementById("modal-privacy");
+  const linkOpenTerms = document.getElementById("link-open-terms");
+  const linkOpenPrivacy = document.getElementById("link-open-privacy");
+  const btnCloseTerms = document.getElementById("btn-close-terms");
+  const btnClosePrivacy = document.getElementById("btn-close-privacy");
+  const btnAgreeTermsClose = document.getElementById("btn-agree-terms-close");
+  const btnAgreePrivacyClose = document.getElementById("btn-agree-privacy-close");
 
   const bcRoot = document.getElementById("bc-root");
   const bcCurrent = document.getElementById("bc-current");
@@ -140,7 +159,16 @@ document.addEventListener("DOMContentLoaded", () => {
   // ==========================================
   async function apiGet(url) {
     try {
-      const res = await fetch(url);
+      const headers = {};
+      const token = localStorage.getItem("focusflow_auth_token");
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+      }
+      const res = await fetch(url, { headers });
+      if (res.status === 401) {
+        handleLocalLogout();
+        return null;
+      }
       if (res.ok) return await res.json();
     } catch (e) {
       console.warn(`Error GET a ${url}, fallback local`, e);
@@ -150,11 +178,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
   async function apiPost(url, data) {
     try {
+      const headers = { "Content-Type": "application/json" };
+      const token = localStorage.getItem("focusflow_auth_token");
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+      }
       const res = await fetch(url, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: headers,
         body: JSON.stringify(data)
       });
+      if (res.status === 401) {
+        handleLocalLogout();
+        return null;
+      }
       if (res.ok) return await res.json();
     } catch (e) {
       console.warn(`Error POST a ${url}, fallback local`, e);
@@ -178,21 +215,30 @@ document.addEventListener("DOMContentLoaded", () => {
       views[viewName].classList.remove("hidden");
     }
 
-    if (viewName === "intake") {
+    if (viewName === "welcome") {
+      bcRoot.innerText = "FocusFlow";
+      bcCurrent.innerText = "Bienvenida";
+      if (btnLogout) btnLogout.classList.add("hidden");
+    } else if (viewName === "intake") {
       bcRoot.innerText = "FocusFlow";
       bcCurrent.innerText = "Onboarding";
+      if (btnLogout) btnLogout.classList.remove("hidden");
     } else if (viewName === "dashboard") {
       bcRoot.innerText = "Espacio Personal";
       bcCurrent.innerText = "Workspace";
+      if (btnLogout) btnLogout.classList.remove("hidden");
     } else if (viewName === "checkin") {
       bcRoot.innerText = "Espacio Personal";
       bcCurrent.innerText = "Check-in Emocional";
+      if (btnLogout) btnLogout.classList.remove("hidden");
     } else if (viewName === "restructuring") {
       bcRoot.innerText = "Espacio Personal";
       bcCurrent.innerText = "TCC: Pensamiento Trampa";
+      if (btnLogout) btnLogout.classList.remove("hidden");
     } else if (viewName === "coach") {
       bcRoot.innerText = "Área Clínica";
       bcCurrent.innerText = "Dashboard Coach";
+      if (btnLogout) btnLogout.classList.remove("hidden");
       loadCoachDashboard();
     }
     
@@ -464,6 +510,12 @@ document.addEventListener("DOMContentLoaded", () => {
   // INICIALIZACIÓN ASÍNCRONA
   // ==========================================
   async function initializeFocusFlow() {
+    const token = localStorage.getItem("focusflow_auth_token");
+    if (!token) {
+      showView("welcome");
+      return;
+    }
+
     // Chequear retorno de pagos antes de inicializar vistas
     await checkPaymentReturn();
 
@@ -1153,20 +1205,17 @@ document.addEventListener("DOMContentLoaded", () => {
       saveState();
 
       if (paymentSuccessModal) {
-        // Personalizar el modal según el plan comprado
         const isCoach = plan === 'coach';
         paymentSuccessModal.querySelector("h2").innerText = isCoach ? "¡Suscripción Coach Activa!" : "¡Plan Auto-Guía Activo!";
         paymentSuccessModal.querySelector("p").innerText = isCoach 
           ? "Tu pago en Mercado Pago ha sido aprobado. Los canales de comunicación con tu coach asignado han sido habilitados de inmediato."
           : "Tu pago en Mercado Pago ha sido aprobado. Todas las funciones de la aplicación han sido desbloqueadas.";
-        
         paymentSuccessModal.classList.remove("hidden");
       }
       
       // Limpiar parámetros de la URL
       window.history.replaceState({}, document.title, window.location.pathname);
     }
-    
     updatePremiumUI();
   }
 
@@ -1268,6 +1317,179 @@ document.addEventListener("DOMContentLoaded", () => {
     btnClosePaymentModal.addEventListener("click", () => {
       paymentSuccessModal.classList.add("hidden");
       updatePremiumUI();
+    });
+  }
+
+  // ==========================================
+  // MANEJADORES DE ACCESO Y AUTENTICACIÓN
+  // ==========================================
+  
+  if (tabLoginBtn && tabRegisterBtn && formLogin && formRegister) {
+    tabLoginBtn.addEventListener("click", () => {
+      tabRegisterBtn.classList.remove("active");
+      tabRegisterBtn.style.borderBottom = "2px solid transparent";
+      tabRegisterBtn.style.color = "var(--color-text-secondary)";
+      tabLoginBtn.classList.add("active");
+      tabLoginBtn.style.borderBottom = "2px solid var(--color-teal)";
+      tabLoginBtn.style.color = "#fff";
+      formRegister.classList.add("hidden");
+      formLogin.classList.remove("hidden");
+      if (authErrorMessage) authErrorMessage.classList.add("hidden");
+    });
+
+    tabRegisterBtn.addEventListener("click", () => {
+      tabLoginBtn.classList.remove("active");
+      tabLoginBtn.style.borderBottom = "2px solid transparent";
+      tabLoginBtn.style.color = "var(--color-text-secondary)";
+      tabRegisterBtn.classList.add("active");
+      tabRegisterBtn.style.borderBottom = "2px solid var(--color-teal)";
+      tabRegisterBtn.style.color = "#fff";
+      formLogin.classList.add("hidden");
+      formRegister.classList.remove("hidden");
+      if (authErrorMessage) authErrorMessage.classList.add("hidden");
+    });
+  }
+
+  if (formLogin) {
+    formLogin.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const email = document.getElementById("login-email").value.trim();
+      const password = document.getElementById("login-password").value;
+      
+      if (authErrorMessage) authErrorMessage.classList.add("hidden");
+
+      const res = await apiPost('/api/auth/login', { username: email, password });
+      if (res && res.success && res.token) {
+        localStorage.setItem("focusflow_auth_token", res.token);
+        appState.userProfile = res.profile;
+        saveState();
+        
+        initializeFocusFlow();
+      } else {
+        if (authErrorMessage) {
+          authErrorMessage.innerText = "Usuario o contraseña incorrectos. Intenta de nuevo.";
+          authErrorMessage.classList.remove("hidden");
+        }
+      }
+    });
+  }
+
+  if (formRegister) {
+    formRegister.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const email = document.getElementById("register-email").value.trim();
+      const password = document.getElementById("register-password").value;
+      const agreeCheckbox = document.getElementById("register-agree-checkbox");
+
+      if (authErrorMessage) authErrorMessage.classList.add("hidden");
+
+      if (!agreeCheckbox || !agreeCheckbox.checked) {
+        if (authErrorMessage) {
+          authErrorMessage.innerText = "Debes aceptar los Términos y Condiciones para continuar.";
+          authErrorMessage.classList.remove("hidden");
+        }
+        return;
+      }
+
+      const res = await apiPost('/api/auth/register', { username: email, password });
+      if (res && res.success && res.token) {
+        localStorage.setItem("focusflow_auth_token", res.token);
+        
+        // Resetear estado local para el nuevo usuario
+        appState.userProfile = res.profile;
+        appState.intakeData = { asrsAnswers: [], camhAnswers: {}, wfirsAreas: [] };
+        appState.dailyLogs = [];
+        appState.tasks = [];
+        appState.adherenceMetrics = {
+          tasksCreated: 0,
+          tasksDivided: 0,
+          tasksCompleted: 0,
+          breathingExercisesDone: 0,
+          cognitiveRestructurings: 0,
+          premiumUnlocked: false
+        };
+        saveState();
+        
+        initializeFocusFlow();
+      } else {
+        if (authErrorMessage) {
+          authErrorMessage.innerText = res && res.error ? res.error : "No se pudo crear la cuenta. El usuario podría ya existir.";
+          authErrorMessage.classList.remove("hidden");
+        }
+      }
+    });
+  }
+
+  function handleLocalLogout() {
+    localStorage.removeItem("focusflow_auth_token");
+    
+    // Restaurar estado global al valor inicial por defecto
+    appState.userProfile = {
+      name: "Invitado",
+      completedIntake: false,
+      kryptoniteArea: "Pendiente",
+      asrsScore: 0,
+      camhAlerts: 0,
+      breathsDone: 0,
+      premium: false,
+      country: "ARG",
+      premiumPlan: null
+    };
+    appState.dailyLogs = [];
+    appState.tasks = [];
+    appState.adherenceMetrics = {
+      tasksCreated: 0,
+      tasksDivided: 0,
+      tasksCompleted: 0,
+      breathingExercisesDone: 0,
+      cognitiveRestructurings: 0,
+      premiumUnlocked: false
+    };
+    saveState();
+    
+    showView("welcome");
+    
+    if (formLogin) formLogin.reset();
+    if (formRegister) formRegister.reset();
+    if (authErrorMessage) authErrorMessage.classList.add("hidden");
+  }
+
+  if (btnLogout) {
+    btnLogout.addEventListener("click", async () => {
+      await apiPost('/api/auth/logout', {});
+      handleLocalLogout();
+    });
+  }
+
+  // ==========================================
+  // MANEJADORES DE MODALES LEGALES
+  // ==========================================
+  
+  if (linkOpenTerms && modalTerms && btnCloseTerms && btnAgreeTermsClose) {
+    linkOpenTerms.addEventListener("click", (e) => {
+      e.preventDefault();
+      modalTerms.classList.remove("hidden");
+    });
+    btnCloseTerms.addEventListener("click", () => {
+      modalTerms.classList.add("hidden");
+    });
+    btnAgreeTermsClose.addEventListener("click", () => {
+      modalTerms.classList.add("hidden");
+      const checkbox = document.getElementById("register-agree-checkbox");
+      if (checkbox) checkbox.checked = true;
+    });
+  }
+
+  if (linkOpenPrivacy && modalPrivacy && btnClosePrivacy && btnAgreePrivacyClose) {
+    linkOpenPrivacy.addEventListener("click", (e) => {
+      e.preventDefault();
+      modalPrivacy.classList.remove("hidden");
+    });
+    btnClosePrivacy.addEventListener("click", () => {
+      modalPrivacy.classList.add("hidden");
+    });
+    btnAgreePrivacyClose.addEventListener("click", () => {
+      modalPrivacy.classList.add("hidden");
     });
   }
 
