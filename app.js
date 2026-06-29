@@ -516,6 +516,22 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
+    // Gestionar visibilidad del selector de roles clínica/paciente
+    const roleSelector = document.querySelector(".role-selector");
+    if (roleSelector) {
+      if (appState.userProfile && appState.userProfile.role === "coach") {
+        roleSelector.classList.remove("hidden");
+        showView("coach");
+        if (roleClientBtn && roleCoachBtn) {
+          roleClientBtn.classList.remove("active");
+          roleCoachBtn.classList.add("active");
+        }
+        return;
+      } else {
+        roleSelector.classList.add("hidden");
+      }
+    }
+
     // Chequear retorno de pagos antes de inicializar vistas
     await checkPaymentReturn();
 

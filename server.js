@@ -36,7 +36,8 @@ const defaultData = {
         breathsDone: 4,
         premium: false,
         country: "ARG",
-        premiumPlan: null
+        premiumPlan: null,
+        role: "patient"
       },
       intakeData: {
         asrsAnswers: [2, 3, 2, 4, 3, 3],
@@ -56,6 +57,20 @@ const defaultData = {
         cognitiveRestructurings: 1,
         premiumUnlocked: false
       }
+    },
+    "coach@focusflow.com": {
+      password: "123",
+      profile: {
+        name: "Lic. Martina Silva",
+        role: "coach",
+        completedIntake: true,
+        premium: true,
+        country: "ARG",
+        premiumPlan: "coach"
+      },
+      intakeData: {},
+      dailyLogs: [],
+      adherenceMetrics: {}
     }
   },
   sessions: {}
@@ -289,8 +304,13 @@ app.post('/api/adherence', authenticateToken, (req, res) => {
 
 // 6. Endpoint consolidado para el Coach Dashboard (Gráficos + Alertas)
 app.get('/api/coach/dashboard', authenticateToken, (req, res) => {
-  const user = req.user;
-  
+  if (req.user.profile.role !== 'coach') {
+    return res.status(403).json({ error: "Acceso denegado: Se requiere rol de Coach." });
+  }
+
+  const db = readDatabase();
+  const patient = db.users["paciente@focusflow.com"];
+
   const defaultAlerts = [
     {
       type: "Riesgo de Conducción (JDQ)",
@@ -308,8 +328,8 @@ app.get('/api/coach/dashboard', authenticateToken, (req, res) => {
 
   const liveAlerts = [];
   
-  if (user.dailyLogs.length >= 3) {
-    const last3 = user.dailyLogs.slice(0, 3);
+  if (patient && patient.dailyLogs.length >= 3) {
+    const last3 = patient.dailyLogs.slice(0, 3);
     const frusts = last3.map(l => l.frustration);
     if (frusts.every(f => f >= 7)) {
       liveAlerts.push({
@@ -319,19 +339,19 @@ app.get('/api/coach/dashboard', authenticateToken, (req, res) => {
         date: "Hoy"
       });
     }
-  } else if (user.dailyLogs.length > 0 && user.dailyLogs[0].frustration >= 8) {
+  } else if (patient && patient.dailyLogs.length > 0 && patient.dailyLogs[0].frustration >= 8) {
     liveAlerts.push({
       type: "Pico de Impulsividad",
-      message: "El usuario registró frustración extrema de " + user.dailyLogs[0].frustration + " hoy.",
+      message: "El usuario registró frustración extrema de " + patient.dailyLogs[0].frustration + " hoy.",
       severity: "critical",
       date: "Hoy"
     });
   }
 
   res.json({
-    userProfile: user.profile,
-    dailyLogs: user.dailyLogs,
-    adherenceMetrics: user.adherenceMetrics,
+    userProfile: patient ? patient.profile : {},
+    dailyLogs: patient ? patient.dailyLogs : [],
+    adherenceMetrics: patient ? patient.adherenceMetrics : {},
     alerts: [...liveAlerts, ...defaultAlerts]
   });
 });
