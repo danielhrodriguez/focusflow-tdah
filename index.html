@@ -424,11 +424,11 @@
           <!-- Formulario para agregar Tarea Kryptonita -->
           <div id="chunking-form-container">
             <div class="form-group-inline">
-              <input type="text" id="kryptonite-task-input" placeholder="Escribe esa tarea abrumadora (ej: Declarar impuestos del mes)..." class="input-flat">
-              <button id="btn-analyze-task" class="btn btn-primary">Dividir Tarea</button>
+              <input type="text" id="kryptonite-task-input" placeholder="Escribe esa tarea abrumadora (ej: Limpiar mi habitación)..." class="input-flat">
+              <button id="btn-analyze-task" class="btn btn-primary">🪄 Desglosar Tarea</button>
             </div>
             <p class="text-sm text-amber mt-2 hidden" id="task-length-warning">
-              <span class="material-icons text-sm">warning</span> Esta tarea suena muy grande. Vamos a transformarla en pasos muy pequeños y fáciles.
+              <span class="material-icons text-sm">warning</span> Esta tarea suena muy abrumadora. La dividiremos en micro-pasos sencillos para ti.
             </p>
           </div>
 
@@ -467,7 +467,7 @@
         <!-- FIDGET ZONE DIGITAL (Sección 6: Mitigación de inquietud motora) -->
         <div class="card flex-col">
           <h3>Fidget Zona Calma</h3>
-          <p class="text-muted text-sm mb-4">Haz clic o toca las burbujas para liberar tensión e hiperactividad motora.</p>
+          <p class="text-muted text-sm mb-4">Toca las burbujas para liberar tensión motora o enciende sonidos de enfoque.</p>
           
           <div class="fidget-wrapper">
             <div class="fidget-bubble-wrap" id="fidget-bubble-wrap">
@@ -478,6 +478,35 @@
               <div class="bubble"></div><div class="bubble"></div><div class="bubble"></div><div class="bubble"></div>
             </div>
             <button id="btn-reset-fidget" class="btn btn-secondary btn-xs mt-3 btn-full-width">Resetear Burbujas</button>
+          </div>
+
+          <!-- Generador de Sonidos de Enfoque Programático -->
+          <div class="noise-generator-container mt-6" style="border-top: 1px solid rgba(255,255,255,0.05); padding-top: 1.25rem; text-align: left; width: 100%;">
+            <h4 style="font-size: 0.85rem; color: var(--color-text-primary); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 4px;">
+              <span class="material-icons text-teal" style="font-size: 1.15rem;">headphones</span> Audio de Concentración TDAH
+            </h4>
+            <p class="text-xs text-muted mb-4" style="line-height: 1.3;">Sintetizado en vivo por tu navegador para inducir enfoque dopaminérgico y mitigar distracciones.</p>
+            
+            <div class="noise-selector d-flex gap-2 mb-3" style="width: 100%;">
+              <button class="btn btn-secondary btn-xs btn-noise active" data-noise="brown" style="flex: 1; border: 1px solid rgba(20, 184, 166, 0.3); color: #fff;">Ruido Marrón</button>
+              <button class="btn btn-secondary btn-xs btn-noise" data-noise="white" style="flex: 1;">Ruido Blanco</button>
+              <button class="btn btn-secondary btn-xs btn-noise" data-noise="binaural" style="flex: 1;" title="Diferencial de 5Hz Theta para concentración">Binaural 5Hz</button>
+            </div>
+
+            <div class="d-flex gap-2">
+              <button id="btn-noise-play" class="btn btn-emerald btn-sm" style="flex: 1; height: 32px; font-weight: 700; border-radius: 6px; cursor: pointer; border: none; color: #fff; display: flex; align-items: center; justify-content: center; gap: 4px;">
+                <span class="material-icons" style="font-size: 1rem;">play_arrow</span> Escuchar
+              </button>
+              <button id="btn-noise-stop" class="btn btn-secondary btn-sm" style="height: 32px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center;" disabled>
+                <span class="material-icons" style="font-size: 1rem;">stop</span> Detener
+              </button>
+            </div>
+            
+            <!-- Indicador animado de reproducción -->
+            <div id="noise-playing-indicator" class="hidden mt-3 text-center" style="font-size: 0.75rem; color: var(--color-teal); align-items: center; justify-content: center; gap: 5px;">
+              <span class="material-icons" style="font-size: 0.9rem; animation: pulse 1s infinite alternate;">volume_up</span>
+              Reproduciendo <span id="noise-playing-type" style="font-weight: 700; text-transform: uppercase;">Marrón</span>...
+            </div>
           </div>
         </div>
 

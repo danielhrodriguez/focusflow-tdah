@@ -507,6 +507,190 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ==========================================
+  // GENERADOR DE RUIDO DE ENFOQUE (Web Audio API)
+  // ==========================================
+  class NoiseGenerator {
+    constructor() {
+      this.audioCtx = null;
+      this.noiseNode = null;
+      this.gainNode = null;
+      this.isPlaying = false;
+      this.currentType = 'brown'; // 'white', 'brown', 'binaural'
+      this.oscillator1 = null;
+      this.oscillator2 = null;
+    }
+    
+    init() {
+      this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      this.gainNode = this.audioCtx.createGain();
+      this.gainNode.gain.value = 0.12; // Volumen bajo de fondo
+      this.gainNode.connect(this.audioCtx.destination);
+    }
+    
+    createWhiteNoise() {
+      const bufferSize = 2 * this.audioCtx.sampleRate;
+      const noiseBuffer = this.audioCtx.createBuffer(1, bufferSize, this.audioCtx.sampleRate);
+      const output = noiseBuffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) {
+        output[i] = Math.random() * 2 - 1;
+      }
+      const whiteNoise = this.audioCtx.createBufferSource();
+      whiteNoise.buffer = noiseBuffer;
+      whiteNoise.loop = true;
+      return whiteNoise;
+    }
+    
+    createBrownNoise() {
+      const bufferSize = 2 * this.audioCtx.sampleRate;
+      const noiseBuffer = this.audioCtx.createBuffer(1, bufferSize, this.audioCtx.sampleRate);
+      const output = noiseBuffer.getChannelData(0);
+      let lastOut = 0.0;
+      for (let i = 0; i < bufferSize; i++) {
+        const white = Math.random() * 2 - 1;
+        output[i] = (lastOut + (0.02 * white)) / 1.02;
+        lastOut = output[i];
+        output[i] *= 3.5;
+      }
+      const brownNoise = this.audioCtx.createBufferSource();
+      brownNoise.buffer = noiseBuffer;
+      brownNoise.loop = true;
+      return brownNoise;
+    }
+    
+    createBinauralBeats() {
+      this.oscillator1 = this.audioCtx.createOscillator();
+      this.oscillator1.type = 'sine';
+      this.oscillator1.frequency.value = 150; // 150Hz oído izquierdo
+      
+      this.oscillator2 = this.audioCtx.createOscillator();
+      this.oscillator2.type = 'sine';
+      this.oscillator2.frequency.value = 155; // 155Hz oído derecho -> 5Hz Theta
+      
+      const gain1 = this.audioCtx.createGain();
+      const gain2 = this.audioCtx.createGain();
+      gain1.gain.value = 0.5;
+      gain2.gain.value = 0.5;
+      
+      this.oscillator1.connect(gain1);
+      this.oscillator2.connect(gain2);
+      
+      const panner1 = this.audioCtx.createStereoPanner();
+      const panner2 = this.audioCtx.createStereoPanner();
+      panner1.pan.value = -1;
+      panner2.pan.value = 1;
+      
+      gain1.connect(panner1);
+      gain2.connect(panner2);
+      
+      panner1.connect(this.gainNode);
+      panner2.connect(this.gainNode);
+      
+      this.oscillator1.start();
+      this.oscillator2.start();
+    }
+    
+    play(type) {
+      if (!this.audioCtx) this.init();
+      
+      if (this.audioCtx.state === 'suspended') {
+        this.audioCtx.resume();
+      }
+      
+      this.stop();
+      this.currentType = type;
+      
+      if (type === 'white') {
+        this.noiseNode = this.createWhiteNoise();
+        this.noiseNode.connect(this.gainNode);
+        this.noiseNode.start();
+      } else if (type === 'brown') {
+        this.noiseNode = this.createBrownNoise();
+        this.noiseNode.connect(this.gainNode);
+        this.noiseNode.start();
+      } else if (type === 'binaural') {
+        this.createBinauralBeats();
+      }
+      
+      this.isPlaying = true;
+    }
+    
+    stop() {
+      if (this.noiseNode) {
+        try { this.noiseNode.stop(); } catch(e) {}
+        this.noiseNode.disconnect();
+        this.noiseNode = null;
+      }
+      if (this.oscillator1) {
+        try { this.oscillator1.stop(); } catch(e) {}
+        this.oscillator1.disconnect();
+        this.oscillator1 = null;
+      }
+      if (this.oscillator2) {
+        try { this.oscillator2.stop(); } catch(e) {}
+        this.oscillator2.disconnect();
+        this.oscillator2 = null;
+      }
+      this.isPlaying = false;
+    }
+  }
+
+  const noiseGen = new NoiseGenerator();
+  let selectedNoiseType = 'brown';
+
+  // Eventos de selección de sonido
+  const noiseBtns = document.querySelectorAll(".btn-noise");
+  noiseBtns.forEach(btn => {
+    btn.addEventListener("click", () => {
+      noiseBtns.forEach(b => {
+        b.classList.remove("active");
+        b.style.border = "none";
+        b.style.color = "var(--color-text-secondary)";
+      });
+      btn.classList.add("active");
+      btn.style.border = "1px solid rgba(20, 184, 166, 0.3)";
+      btn.style.color = "#fff";
+      selectedNoiseType = btn.getAttribute("data-noise");
+      
+      if (noiseGen.isPlaying) {
+        noiseGen.play(selectedNoiseType);
+        updateNoiseIndicator();
+      }
+    });
+  });
+
+  const btnNoisePlay = document.getElementById("btn-noise-play");
+  const btnNoiseStop = document.getElementById("btn-noise-stop");
+  const noiseIndicator = document.getElementById("noise-playing-indicator");
+  const noiseTypeText = document.getElementById("noise-playing-type");
+
+  if (btnNoisePlay && btnNoiseStop) {
+    btnNoisePlay.addEventListener("click", () => {
+      noiseGen.play(selectedNoiseType);
+      btnNoisePlay.setAttribute("disabled", "true");
+      btnNoiseStop.removeAttribute("disabled");
+      updateNoiseIndicator();
+    });
+
+    btnNoiseStop.addEventListener("click", () => {
+      noiseGen.stop();
+      btnNoisePlay.removeAttribute("disabled");
+      btnNoiseStop.setAttribute("disabled", "true");
+      if (noiseIndicator) noiseIndicator.classList.add("hidden");
+    });
+  }
+
+  function updateNoiseIndicator() {
+    if (noiseIndicator && noiseTypeText) {
+      let typeLabel = "Marrón";
+      if (selectedNoiseType === 'white') typeLabel = "Blanco";
+      if (selectedNoiseType === 'binaural') typeLabel = "Binaurales 5Hz (Theta)";
+      noiseTypeText.innerText = typeLabel;
+      noiseIndicator.classList.remove("hidden");
+      noiseIndicator.style.display = "flex";
+    }
+  }
+
+  // ==========================================
   // INICIALIZACIÓN ASÍNCRONA
   // ==========================================
   async function initializeFocusFlow() {
@@ -665,15 +849,61 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
+  function getSemanticMicroSteps(taskName) {
+    const text = taskName.toLowerCase();
+    
+    if (text.includes("limpiar") || text.includes("ordenar") || text.includes("cocina") || text.includes("casa") || text.includes("ropa") || text.includes("habitación") || text.includes("baño")) {
+      return [
+        `1. Poner alarma de 10 min y despejar la superficie de trabajo más visible (ej: la mesa/cama).`,
+        `2. Separar lo que sirve de lo que va al tacho o lavar, en una sola pila sin juzgar.`,
+        `3. Guardar las cosas seleccionadas en sus cajas y dar por terminado el primer bloque.`
+      ];
+    }
+    
+    if (text.includes("estudiar") || text.includes("leer") || text.includes("aprender") || text.includes("escribir") || text.includes("examen") || text.includes("tarea") || text.includes("informe")) {
+      return [
+        `1. Sentarse, abrir el material y leer estrictamente el primer párrafo o título.`,
+        `2. Escribir a mano en una sola frase lo que entendiste (sin importar el formato).`,
+        `3. Cerrar el libro, pararse de la silla por 2 minutos y estirarse.`
+      ];
+    }
+    
+    if (text.includes("comprar") || text.includes("compras") || text.includes("super") || text.includes("almacen") || text.includes("tienda")) {
+      return [
+        `1. Revisar la heladera y escribir en un papelito solo 5 ingredientes clave.`,
+        `2. Colocar las llaves, el barbijo/bolsas y la billetera en la mesa principal.`,
+        `3. Salir directo hacia la tienda predefinida sin mirar otras vidrieras.`
+      ];
+    }
+
+    if (text.includes("llamar") || text.includes("mail") || text.includes("correo") || text.includes("mensaje") || text.includes("enviar") || text.includes("escribirle")) {
+      return [
+        `1. Escribir el mensaje/borrador en un anotador digital simple (sin destinatario puesto).`,
+        `2. Copiar y pegar el texto en el mail/chat real y agregar el correo del contacto.`,
+        `3. Presionar "Enviar" con los ojos cerrados, cerrar la ventana e ir por un vaso de agua.`
+      ];
+    }
+
+    if (text.includes("pagar") || text.includes("cuenta") || text.includes("dinero") || text.includes("factura") || text.includes("banco")) {
+      return [
+        `1. Buscar y abrir la boleta/factura física o digital y dejarla en pantalla.`,
+        `2. Ingresar a la web del banco/Mercado Pago y completar el código de barra.`,
+        `3. Confirmar la transferencia y guardar el comprobante en una carpeta única.`
+      ];
+    }
+
+    return [
+      `1. Poner un temporizador de 5 minutos y hacer solo la parte más ridícula y pequeña de "${taskName}".`,
+      `2. Trabajar enfocado sin mirar el teléfono (ponlo boca abajo o lejos).`,
+      `3. Anotar en qué punto te quedaste y tomar un descanso de 2 minutos.`
+    ];
+  }
+
   btnAnalyzeTask.addEventListener("click", () => {
     const taskName = taskInput.value.trim();
     if (!taskName) return;
 
-    const microSteps = [
-      `1. Preparar espacio y herramientas para "${taskName}" (ej: abrir documentos/web).`,
-      `2. Trabajar enfocado en la primera sección simple durante 10 minutos exactos.`,
-      `3. Escribir en qué te quedaste y parar para tomar agua.`
-    ];
+    const microSteps = getSemanticMicroSteps(taskName);
 
     appState.tasks = microSteps.map((step, idx) => ({
       id: idx,
