@@ -103,6 +103,14 @@ function readDatabase() {
       writeDatabase(migrated);
       return migrated;
     }
+    
+    // Asegurarse de que el usuario coach de pruebas siempre exista en db.json
+    if (parsed.users && !parsed.users["coach@focusflow.com"]) {
+      console.log("Insertando cuenta de coach@focusflow.com en base de datos existente...");
+      parsed.users["coach@focusflow.com"] = defaultData.users["coach@focusflow.com"];
+      fs.writeFileSync(DB_FILE, JSON.stringify(parsed, null, 2), 'utf8');
+    }
+    
     return parsed;
   } catch (e) {
     console.error("Error leyendo db.json, usando valores por defecto", e);
