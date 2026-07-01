@@ -1770,6 +1770,15 @@ document.addEventListener("DOMContentLoaded", () => {
       e.preventDefault();
       modalTerms.classList.remove("hidden");
     });
+    
+    const linkOpenTermsCoach = document.getElementById("link-open-terms-coach");
+    if (linkOpenTermsCoach) {
+      linkOpenTermsCoach.addEventListener("click", (e) => {
+        e.preventDefault();
+        modalTerms.classList.remove("hidden");
+      });
+    }
+
     btnCloseTerms.addEventListener("click", () => {
       modalTerms.classList.add("hidden");
     });
@@ -1777,6 +1786,8 @@ document.addEventListener("DOMContentLoaded", () => {
       modalTerms.classList.add("hidden");
       const checkbox = document.getElementById("register-agree-checkbox");
       if (checkbox) checkbox.checked = true;
+      const coachCheckbox = document.getElementById("coach-agree-checkbox");
+      if (coachCheckbox) coachCheckbox.checked = true;
     });
   }
 
@@ -1785,11 +1796,22 @@ document.addEventListener("DOMContentLoaded", () => {
       e.preventDefault();
       modalPrivacy.classList.remove("hidden");
     });
+
+    const linkOpenPrivacyCoach = document.getElementById("link-open-privacy-coach");
+    if (linkOpenPrivacyCoach) {
+      linkOpenPrivacyCoach.addEventListener("click", (e) => {
+        e.preventDefault();
+        modalPrivacy.classList.remove("hidden");
+      });
+    }
+
     btnClosePrivacy.addEventListener("click", () => {
       modalPrivacy.classList.add("hidden");
     });
     btnAgreePrivacyClose.addEventListener("click", () => {
       modalPrivacy.classList.add("hidden");
+      const coachCheckbox = document.getElementById("coach-agree-checkbox");
+      if (coachCheckbox) coachCheckbox.checked = true;
     });
   }
 
