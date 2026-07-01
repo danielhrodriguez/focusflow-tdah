@@ -1493,18 +1493,28 @@ document.addEventListener("DOMContentLoaded", () => {
     buttonEl.removeAttribute("disabled");
     
     if (res && res.init_point) {
-      window.location.href = res.init_point;
+      if (host.includes("localhost") || host.includes("127.0.0.1")) {
+        // En desarrollo local (localhost), abrir simulador para comodidad de pruebas del desarrollador
+        pendingSimPlan = plan;
+        if (simPlanTitle && simPlanPrice) {
+          simPlanTitle.innerText = plan === 'app' ? 'Plan Auto-Guía' : 'Plan Coach Premium';
+          simPlanPrice.innerText = plan === 'app' ? '$1.900 ARS' : '$9.900 ARS';
+        }
+        if (checkoutSimulationModal) {
+          checkoutSimulationModal.classList.remove("hidden");
+        }
+      } else {
+        // En producción (Render), redirigir directamente al link de Mercado Pago
+        window.location.href = res.init_point;
+      }
     } else if (res && res.simulated_url) {
-      // Guardar plan pendiente para la simulación
       pendingSimPlan = plan;
       
-      // Personalizar datos del plan en el simulador
       if (simPlanTitle && simPlanPrice) {
         simPlanTitle.innerText = plan === 'app' ? 'Plan Auto-Guía' : 'Plan Coach Premium';
-        simPlanPrice.innerText = plan === 'app' ? '$1.500 ARS' : '$7.500 ARS';
+        simPlanPrice.innerText = plan === 'app' ? '$1.900 ARS' : '$9.900 ARS';
       }
 
-      // Abrir modal de simulación de pasarela
       if (checkoutSimulationModal) {
         checkoutSimulationModal.classList.remove("hidden");
       }

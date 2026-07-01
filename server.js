@@ -373,13 +373,13 @@ app.post('/api/checkout/mercadopago', authenticateToken, async (req, res) => {
   const host = req.body.host || `http://localhost:${PORT}`;
   const plan = req.body.plan || 'coach';
   const isApp = plan === 'app';
-  const price = isApp ? 1500.00 : 7500.00;
+  const price = isApp ? 1900.00 : 9900.00;
   const title = isApp ? 'Suscripción FocusFlow Solo App' : 'Suscripción FocusFlow Coach Premium';
 
   try {
-    // Si el token es el ficticio por defecto, forzar el uso del simulador opcional
+    // Si el token es el ficticio por defecto, retornar los links estáticos creados por Daniel
     if (MP_TOKEN.includes('12345678') || MP_TOKEN === 'TEST-DEFAULT') {
-      throw new Error("Token ficticio detectado en el servidor");
+      return res.json({ init_point: isApp ? 'https://mpago.la/1DxfxKN' : 'https://mpago.la/1d3hR1s' });
     }
 
     const preference = new Preference(client);
