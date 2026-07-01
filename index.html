@@ -186,6 +186,92 @@
       </div>
     </section>
 
+    <!-- PANTALLA SECRETA DE REGISTRO PARA COACHES -->
+    <section id="view-coach-register" class="app-view hidden">
+      <div class="welcome-container" style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 3rem; align-items: center; max-width: 1050px; margin: 2rem auto; width: 100%;">
+        
+        <!-- Columna 1: Presentación para Profesionales -->
+        <div class="welcome-presentation" style="text-align: left;">
+          <span class="badge badge-clinical" style="margin-bottom: 1rem;">Portal de Profesionales</span>
+          <h1 style="font-size: 2.8rem; font-weight: 700; line-height: 1.1; margin-bottom: 1.5rem; letter-spacing: -1px;">
+            Únete al staff clínico de <span class="text-teal">FocusFlow</span>
+          </h1>
+          <p class="text-muted" style="font-size: 1rem; line-height: 1.6; margin-bottom: 2rem;">
+            Supervisa el progreso longitudinal de tus pacientes con TDAH, gestiona alertas tempranas basadas en la escala CADDRA y ofrece intervenciones TCC adaptadas directamente desde tu dashboard profesional.
+          </p>
+
+          <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-glass); border-radius: 12px; padding: 1.5rem;" class="d-flex flex-col gap-4">
+            <div class="d-flex gap-3 flex-items-center">
+              <span class="material-icons text-teal" style="font-size: 1.8rem;">analytics</span>
+              <div>
+                <h4 style="font-size: 0.95rem; font-weight: 600; color: #fff; margin-bottom: 2px;">Trazabilidad de Síntomas</h4>
+                <p class="text-xs text-muted">Audita las curvas de frustración, irritabilidad y sensibilidad diaria de tus pacientes.</p>
+              </div>
+            </div>
+            <div class="d-flex gap-3 flex-items-center">
+              <span class="material-icons text-teal" style="font-size: 1.8rem;">warning_amber</span>
+              <div>
+                <h4 style="font-size: 0.95rem; font-weight: 600; color: #fff; margin-bottom: 2px;">Alertas eToolkit CADDRA</h4>
+                <p class="text-xs text-muted">Recibe notificaciones automáticas si el paciente entra en riesgo de parálisis o impulsividad.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Columna 2: Tarjeta de Registro de Coach -->
+        <div class="card welcome-auth-card" style="padding: 2.5rem; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); background: var(--bg-card); box-shadow: var(--shadow-lg);">
+          <h3 style="font-size: 1.4rem; font-weight: 700; margin-bottom: 0.5rem; color: #fff; text-align: left;">Registro Profesional</h3>
+          <p class="text-xs text-muted mb-6" style="text-align: left;">Completa tus datos para activar tu licencia de terapeuta en FocusFlow.</p>
+          
+          <div id="coach-auth-error-message" class="alert-row critical hidden mb-4" style="padding: 8px; border-radius: 6px; font-size: 0.8rem; text-align: left; background-color: rgba(244, 63, 94, 0.1); border-left: 3px solid var(--color-rose); color: var(--color-rose);">
+            <!-- Error -->
+          </div>
+
+          <form id="form-coach-register" class="d-flex flex-col gap-4">
+            <div class="form-group flex-col d-flex">
+              <label for="coach-register-name" class="text-xs text-muted mb-2" style="text-align: left;">Nombre Completo:</label>
+              <input type="text" id="coach-register-name" placeholder="Ej: Dra. Martina Silva" class="input-flat" style="width: 100%; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.25); padding: 10px; border-radius: 6px; color: #fff;" required>
+            </div>
+
+            <div class="form-group flex-col d-flex">
+              <label for="coach-register-email" class="text-xs text-muted mb-2" style="text-align: left;">Email Profesional (Usuario):</label>
+              <input type="email" id="coach-register-email" placeholder="ejemplo@clinicatdah.com" class="input-flat" style="width: 100%; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.25); padding: 10px; border-radius: 6px; color: #fff;" required>
+            </div>
+
+            <div class="form-group flex-col d-flex">
+              <label for="coach-register-password" class="text-xs text-muted mb-2" style="text-align: left;">Elige una Contraseña:</label>
+              <input type="password" id="coach-register-password" placeholder="••••••••" class="input-flat" style="width: 100%; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.25); padding: 10px; border-radius: 6px; color: #fff;" required>
+            </div>
+
+            <div class="form-group flex-col d-flex">
+              <label for="coach-register-country" class="text-xs text-muted mb-2" style="text-align: left;">País de Residencia:</label>
+              <select id="coach-register-country" class="input-flat" style="width: 100%; background: #1e293b; color: #fff; padding: 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1); cursor: pointer;">
+                <option value="ARG">Argentina</option>
+                <option value="MEX">México</option>
+                <option value="ESP">España</option>
+                <option value="COL">Colombia</option>
+                <option value="OTHER">Otro (Internacional)</option>
+              </select>
+            </div>
+
+            <div class="form-group flex-col d-flex">
+              <label for="coach-register-license" class="text-xs text-muted mb-2" style="text-align: left;">Especialidad / Nro de Matrícula:</label>
+              <input type="text" id="coach-register-license" placeholder="Ej: Psicóloga TCC - Mat. 50482" class="input-flat" style="width: 100%; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.25); padding: 10px; border-radius: 6px; color: #fff;" required>
+            </div>
+
+            <button type="submit" class="btn btn-emerald mt-4 btn-full-width" style="height: 42px; font-weight: 700; cursor: pointer; border-radius: 6px; color: #fff; border: none; font-size: 0.9rem;">
+              Registrarme como Profesional
+            </button>
+            
+            <a href="#" id="link-return-welcome" class="text-xs text-muted mt-2 text-center" style="text-decoration: underline; width: 100%; display: block;">
+              Volver al portal público
+            </a>
+          </form>
+
+        </div>
+      </div>
+    </section>
+
     <!-- 1. PANTALLA DE INTAKE / ONBOARDING -->
     <section id="view-intake" class="app-view hidden">
       <div class="view-header">
@@ -642,6 +728,12 @@
         
         <!-- Ficha del Cliente -->
         <div class="card">
+          <div class="d-flex flex-col gap-2 mb-4" style="border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 1rem;">
+            <label for="coach-patient-select" style="font-weight: 600; font-size: 0.85rem; color: var(--color-text-secondary); text-transform: uppercase;">Seleccionar Paciente:</label>
+            <select id="coach-patient-select" class="input-flat" style="background: var(--bg-tertiary); color: #fff; padding: 8px 12px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1); font-size: 0.9rem; width: 100%; cursor: pointer;">
+              <!-- Cargado dinámicamente en app.js -->
+            </select>
+          </div>
           <h3>Ficha del Paciente</h3>
           <hr class="divider">
           <div class="client-info-list mt-4">

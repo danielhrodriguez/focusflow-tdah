@@ -51,7 +51,8 @@ document.addEventListener("DOMContentLoaded", () => {
     dashboard: document.getElementById("view-dashboard"),
     checkin: document.getElementById("view-checkin"),
     restructuring: document.getElementById("view-restructuring"),
-    coach: document.getElementById("view-coach")
+    coach: document.getElementById("view-coach"),
+    "coach-register": document.getElementById("view-coach-register")
   };
 
   // Selectores de Autenticación
@@ -204,8 +205,8 @@ document.addEventListener("DOMContentLoaded", () => {
   // ==========================================
   function showView(viewName) {
     const token = localStorage.getItem("focusflow_auth_token");
-    if (!token && viewName !== "welcome") {
-      // Route Guard: Evitar navegación a cualquier pantalla si no está autenticado
+    if (!token && viewName !== "welcome" && viewName !== "coach-register") {
+      // Route Guard: Evitar navegación a cualquier pantalla si no está autenticado (excepto bienvenida y registro de coach)
       viewName = "welcome";
     }
 
@@ -221,9 +222,9 @@ document.addEventListener("DOMContentLoaded", () => {
       views[viewName].classList.remove("hidden");
     }
 
-    if (viewName === "welcome") {
+    if (viewName === "welcome" || viewName === "coach-register") {
       bcRoot.innerText = "FocusFlow";
-      bcCurrent.innerText = "Bienvenida";
+      bcCurrent.innerText = viewName === "welcome" ? "Bienvenida" : "Registro Clínico";
       if (btnLogout) btnLogout.classList.add("hidden");
       const roleSelector = document.querySelector(".role-selector");
       if (roleSelector) roleSelector.classList.add("hidden");
@@ -711,7 +712,11 @@ document.addEventListener("DOMContentLoaded", () => {
   async function initializeFocusFlow() {
     const token = localStorage.getItem("focusflow_auth_token");
     if (!token) {
-      showView("welcome");
+      if (window.location.hash === "#registro-coach") {
+        showView("coach-register");
+      } else {
+        showView("welcome");
+      }
       return;
     }
 
@@ -1213,9 +1218,33 @@ document.addEventListener("DOMContentLoaded", () => {
   // ==========================================
   // PANEL DE CONTROL DEL COACH (INTEGRADO AL BACKEND)
   // ==========================================
-  async function loadCoachDashboard() {
-    const data = await apiGet('/api/coach/dashboard');
+  async function loadCoachDashboard(patientEmail = null) {
+    let url = '/api/coach/dashboard';
+    if (patientEmail) {
+      url += `?patientEmail=${encodeURIComponent(patientEmail)}`;
+    }
+    const data = await apiGet(url);
     if (!data) return;
+
+    // Poblar el selector de pacientes
+    const patientSelect = document.getElementById("coach-patient-select");
+    if (patientSelect && data.patients) {
+      const activeEmail = data.selectedPatientEmail;
+      
+      patientSelect.innerHTML = data.patients.map(p => `
+        <option value="${p.email}" ${p.email === activeEmail ? 'selected' : ''}>
+          ${p.name} (${p.email}) ${p.completedIntake ? '' : '[Pendiente Intake]'}
+        </option>
+      `).join('');
+      
+      // Adjuntar listener para cambios en el selector (una sola vez)
+      if (!patientSelect.dataset.listenerAttached) {
+        patientSelect.addEventListener("change", (e) => {
+          loadCoachDashboard(e.target.value);
+        });
+        patientSelect.dataset.listenerAttached = "true";
+      }
+    }
 
     // 1. Ficha del Paciente y Adherencia
     if (data.userProfile) {
@@ -1763,5 +1792,69 @@ document.addEventListener("DOMContentLoaded", () => {
       modalPrivacy.classList.add("hidden");
     });
   }
+
+  // ==========================================
+  // MANEJADORES DE REGISTRO SECRETO DE COACHES
+  // ==========================================
+  const formCoachRegister = document.getElementById("form-coach-register");
+  const coachAuthErrorMessage = document.getElementById("coach-auth-error-message");
+  const linkReturnWelcome = document.getElementById("link-return-welcome");
+
+  if (formCoachRegister) {
+    formCoachRegister.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      
+      const name = document.getElementById("coach-register-name").value.trim();
+      const email = document.getElementById("coach-register-email").value.trim();
+      const password = document.getElementById("coach-register-password").value;
+      const country = document.getElementById("coach-register-country").value;
+      const license = document.getElementById("coach-register-license").value.trim();
+      
+      if (coachAuthErrorMessage) coachAuthErrorMessage.classList.add("hidden");
+
+      const res = await apiPost('/api/auth/register-coach', {
+        name,
+        username: email,
+        password,
+        country,
+        license
+      });
+
+      if (res && res.success && res.token) {
+        localStorage.setItem("focusflow_auth_token", res.token);
+        appState.userProfile = res.profile;
+        saveState();
+        
+        // Quitar hash para no molestar la navegación normal
+        window.location.hash = "";
+        
+        initializeFocusFlow();
+      } else {
+        if (coachAuthErrorMessage) {
+          coachAuthErrorMessage.innerText = res && res.error ? res.error : "No se pudo registrar la cuenta de profesional.";
+          coachAuthErrorMessage.classList.remove("hidden");
+        }
+      }
+    });
+  }
+
+  if (linkReturnWelcome) {
+    linkReturnWelcome.addEventListener("click", (e) => {
+      e.preventDefault();
+      window.location.hash = "";
+      showView("welcome");
+    });
+  }
+
+  // Escuchar el cambio de hash para navegación secreta
+  function checkHashRoute() {
+    if (window.location.hash === "#registro-coach") {
+      showView("coach-register");
+    }
+  }
+  
+  window.addEventListener("hashchange", checkHashRoute);
+  // Chequear al cargar la página
+  checkHashRoute();
 
 });

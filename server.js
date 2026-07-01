@@ -202,6 +202,47 @@ app.post('/api/auth/register', (req, res) => {
   res.json({ success: true, token, profile: db.users[username].profile });
 });
 
+// Registrar nuevo profesional (Coach)
+app.post('/api/auth/register-coach', (req, res) => {
+  const { name, username, password, country, license } = req.body;
+  if (!name || !username || !password) {
+    return res.status(400).json({ error: "Nombre, email y contraseña requeridos" });
+  }
+  
+  const db = readDatabase();
+  if (db.users[username]) {
+    return res.status(400).json({ error: "El usuario ya existe" });
+  }
+
+  // Inicializar el coach
+  db.users[username] = {
+    password: password,
+    profile: {
+      name: name,
+      role: "coach",
+      completedIntake: true,
+      kryptoniteArea: "Clínica",
+      asrsScore: 0,
+      camhAlerts: 0,
+      breathsDone: 0,
+      premium: true,
+      country: country || "ARG",
+      license: license || "General",
+      premiumPlan: "coach"
+    },
+    intakeData: {},
+    dailyLogs: [],
+    adherenceMetrics: {}
+  };
+
+  // Crear sesión
+  const token = 'token_' + Math.random().toString(36).substr(2, 9);
+  db.sessions[token] = username;
+  writeDatabase(db);
+
+  res.json({ success: true, token, profile: db.users[username].profile });
+});
+
 // Iniciar sesión
 app.post('/api/auth/login', (req, res) => {
   const { username, password } = req.body;
@@ -317,7 +358,24 @@ app.get('/api/coach/dashboard', authenticateToken, (req, res) => {
   }
 
   const db = readDatabase();
-  const patient = db.users["paciente@focusflow.com"];
+  
+  // Listar todos los pacientes registrados
+  const patientsList = Object.keys(db.users)
+    .filter(email => db.users[email].profile && db.users[email].profile.role !== 'coach')
+    .map(email => ({
+      email: email,
+      name: db.users[email].profile.name || email,
+      completedIntake: !!db.users[email].profile.completedIntake
+    }));
+
+  // Obtener el paciente seleccionado
+  let selectedEmail = req.query.patientEmail || "paciente@focusflow.com";
+  if (!db.users[selectedEmail]) {
+    // Fallback al primer paciente de la lista si el seleccionado no existe
+    selectedEmail = patientsList.length > 0 ? patientsList[0].email : null;
+  }
+
+  const patient = selectedEmail ? db.users[selectedEmail] : null;
 
   const defaultAlerts = [
     {
@@ -336,7 +394,7 @@ app.get('/api/coach/dashboard', authenticateToken, (req, res) => {
 
   const liveAlerts = [];
   
-  if (patient && patient.dailyLogs.length >= 3) {
+  if (patient && patient.dailyLogs && patient.dailyLogs.length >= 3) {
     const last3 = patient.dailyLogs.slice(0, 3);
     const frusts = last3.map(l => l.frustration);
     if (frusts.every(f => f >= 7)) {
@@ -347,7 +405,7 @@ app.get('/api/coach/dashboard', authenticateToken, (req, res) => {
         date: "Hoy"
       });
     }
-  } else if (patient && patient.dailyLogs.length > 0 && patient.dailyLogs[0].frustration >= 8) {
+  } else if (patient && patient.dailyLogs && patient.dailyLogs.length > 0 && patient.dailyLogs[0].frustration >= 8) {
     liveAlerts.push({
       type: "Pico de Impulsividad",
       message: "El usuario registró frustración extrema de " + patient.dailyLogs[0].frustration + " hoy.",
@@ -357,9 +415,17 @@ app.get('/api/coach/dashboard', authenticateToken, (req, res) => {
   }
 
   res.json({
-    userProfile: patient ? patient.profile : {},
+    patients: patientsList,
+    selectedPatientEmail: selectedEmail,
+    userProfile: patient ? patient.profile : { name: "Ninguno", completedIntake: false },
     dailyLogs: patient ? patient.dailyLogs : [],
-    adherenceMetrics: patient ? patient.adherenceMetrics : {},
+    adherenceMetrics: patient ? patient.adherenceMetrics : {
+      tasksCreated: 0,
+      tasksDivided: 0,
+      tasksCompleted: 0,
+      breathingExercisesDone: 0,
+      cognitiveRestructurings: 0
+    },
     alerts: [...liveAlerts, ...defaultAlerts]
   });
 });
