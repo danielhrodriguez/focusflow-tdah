@@ -1195,28 +1195,50 @@ document.addEventListener("DOMContentLoaded", () => {
     reframeProcessCard.scrollIntoView({ behavior: 'smooth' });
   }
 
+  const reframeFormState = document.getElementById("reframe-form-state");
+  const reframeSuccessState = document.getElementById("reframe-success-state");
+  const reframeSuccessThoughtText = document.getElementById("reframe-success-thought-text");
+  const btnReframeFinishGoBack = document.getElementById("btn-reframe-finish-go-back");
+
   btnApplyReframe.addEventListener("click", () => {
     if (selectedThoughtIndex !== null) {
       apiPost('/api/adherence', { metric: 'cognitiveRestructurings' });
       appState.adherenceMetrics = appState.adherenceMetrics || {};
       appState.adherenceMetrics.cognitiveRestructurings = (appState.adherenceMetrics.cognitiveRestructurings || 0) + 1;
-      
+      saveState();
+
       triggerVisualConfetti();
       playPopSound();
-      alert("¡Reestructuración guardada con éxito! Has tomado control de tu pensamiento.");
-      
+
+      const data = trapThoughts[selectedThoughtIndex];
+      if (reframeSuccessThoughtText) {
+        reframeSuccessThoughtText.innerText = data.alternative;
+      }
+      if (reframeFormState) reframeFormState.classList.add("hidden");
+      if (reframeSuccessState) reframeSuccessState.classList.remove("hidden");
+    }
+  });
+
+  if (btnReframeFinishGoBack) {
+    btnReframeFinishGoBack.addEventListener("click", () => {
       reframeProcessCard.classList.add("hidden");
       thoughtsContainer.querySelectorAll(".thought-card").forEach(c => c.classList.remove("selected"));
       selectedThoughtIndex = null;
-      saveState();
+      
+      if (reframeFormState) reframeFormState.classList.remove("hidden");
+      if (reframeSuccessState) reframeSuccessState.classList.add("hidden");
+      
       showView("dashboard");
-    }
-  });
+    });
+  }
 
   document.getElementById("btn-go-restructuring").addEventListener("click", () => {
     showView("restructuring");
     renderThoughtsList();
     reframeProcessCard.classList.add("hidden");
+    
+    if (reframeFormState) reframeFormState.classList.remove("hidden");
+    if (reframeSuccessState) reframeSuccessState.classList.add("hidden");
   });
 
   // ==========================================

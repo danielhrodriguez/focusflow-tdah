@@ -709,23 +709,40 @@
         <div class="card flex-col flex-justify-between hidden" id="reframe-process-card">
           <div class="clinical-tag"><span class="material-icons">psychology</span> Modificación de Creencias</div>
           
-          <div class="reframe-content mt-6">
-            <h4 class="text-amber">Tu pensamiento original:</h4>
-            <blockquote id="original-thought-text" class="thought-quote">"Nunca termino nada."</blockquote>
-            
-            <div class="reframe-guidelines mt-6">
-              <h4>El sesgo de TDAH:</h4>
-              <p id="bias-explanation" class="text-sm text-muted">Este pensamiento es una generalización excesiva. El TDAH te causa bloqueos de inicio, pero no significa que seas incompetente.</p>
+          <!-- Estado 1: Formulario interactivo de reencuadre -->
+          <div id="reframe-form-state" class="d-flex flex-col flex-justify-between" style="height: 100%; width: 100%;">
+            <div class="reframe-content mt-6">
+              <h4 class="text-amber">Tu pensamiento original:</h4>
+              <blockquote id="original-thought-text" class="thought-quote">"Nunca termino nada."</blockquote>
+              
+              <div class="reframe-guidelines mt-6">
+                <h4>El sesgo de TDAH:</h4>
+                <p id="bias-explanation" class="text-sm text-muted">Este pensamiento es una generalización excesiva. El TDAH te causa bloqueos de inicio, pero no significa que seas incompetente.</p>
+              </div>
+
+              <div class="reframe-result mt-6">
+                <h4 class="text-emerald">Frase alternativa realista y compasiva:</h4>
+                <p id="alternative-thought-text" class="alternative-text">"Algunas tareas me toman más tiempo e intentos que otras, pero he completado muchos proyectos en el pasado y puedo hacerlo paso a paso."</p>
+              </div>
             </div>
 
-            <div class="reframe-result mt-6">
-              <h4 class="text-emerald">Frase alternativa realista y compasiva:</h4>
-              <p id="alternative-thought-text" class="alternative-text">"Algunas tareas me toman más tiempo e intentos que otras, pero he completado muchos proyectos en el pasado y puedo hacerlo paso a paso."</p>
+            <div class="mt-8">
+              <button id="btn-apply-reframe" class="btn btn-emerald btn-full-width">Aceptar y Registrar en mi Historial</button>
             </div>
           </div>
 
-          <div class="mt-8">
-            <button id="btn-apply-reframe" class="btn btn-emerald btn-full-width">Aceptar y Registrar en mi Historial</button>
+          <!-- Estado 2: Éxito de Reencuadre -->
+          <div id="reframe-success-state" class="hidden text-center mt-6 flex-col flex-items-center" style="width: 100%;">
+            <span class="material-icons text-emerald" style="font-size: 3.5rem; animation: pulse 1s infinite alternate; margin-bottom: 1rem;">check_circle</span>
+            <h3 class="text-emerald" style="margin-bottom: 0.5rem;">¡Reencuadre Exitoso!</h3>
+            <p class="text-xs text-muted mb-4" style="line-height: 1.4;">Tu cerebro ha tomado control de la creencia disfuncional. Registramos tu adherencia cognitiva.</p>
+            
+            <div style="background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 12px; padding: 1rem; width: 100%; text-align: left;" class="mb-4">
+              <h4 class="text-emerald" style="font-size: 0.75rem; text-transform: uppercase; margin-bottom: 0.25rem; font-weight: 700;">Tu alternativa saludable:</h4>
+              <p id="reframe-success-thought-text" style="font-size: 0.85rem; font-style: italic; color: #fff; line-height: 1.4; border-left: 3px solid var(--color-emerald); padding-left: 0.5rem; margin: 0;"></p>
+            </div>
+            
+            <button id="btn-reframe-finish-go-back" class="btn btn-emerald btn-full-width">Volver al Workspace</button>
           </div>
         </div>
       </div>
