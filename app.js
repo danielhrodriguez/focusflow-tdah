@@ -203,7 +203,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // ==========================================
   // ENRUTADOR DE VISTAS (SPA Routing)
   // ==========================================
-  function showView(viewName) {
+  function showView(viewName, pushState = true) {
     const token = localStorage.getItem("focusflow_auth_token");
     if (!token && viewName !== "welcome" && viewName !== "coach-register") {
       // Route Guard: Evitar navegación a cualquier pantalla si no está autenticado (excepto bienvenida y registro de coach)
@@ -220,6 +220,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (views[viewName]) {
       views[viewName].classList.remove("hidden");
+    }
+
+    if (pushState) {
+      window.history.pushState({ view: viewName }, "", `#${viewName}`);
     }
 
     if (viewName === "welcome" || viewName === "coach-register") {
@@ -1867,6 +1871,33 @@ document.addEventListener("DOMContentLoaded", () => {
       showView("welcome");
     });
   }
+
+  // Vincular botones "Volver al Dashboard" de la interfaz
+  document.querySelectorAll(".btn-back-dashboard").forEach(btn => {
+    btn.addEventListener("click", (e) => {
+      e.preventDefault();
+      showView("dashboard");
+    });
+  });
+
+  // Escuchar el evento popstate del navegador (botón físico Atrás/Adelante)
+  window.addEventListener("popstate", (e) => {
+    if (e.state && e.state.view) {
+      showView(e.state.view, false);
+    } else {
+      const hash = window.location.hash.replace("#", "");
+      if (hash && views[hash]) {
+        showView(hash, false);
+      } else {
+        const token = localStorage.getItem("focusflow_auth_token");
+        if (token) {
+          showView("dashboard", false);
+        } else {
+          showView("welcome", false);
+        }
+      }
+    }
+  });
 
   // Escuchar el cambio de hash para navegación secreta
   function checkHashRoute() {
