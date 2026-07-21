@@ -946,5 +946,12 @@
   <!-- Scripts -->
   <script src="seedData.js?v=1.0.5"></script>
   <script src="app.js?v=1.0.5"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js').catch(err => console.log('SW reg error:', err));
+      });
+    }
+  </script>
 </body>
 </html>
