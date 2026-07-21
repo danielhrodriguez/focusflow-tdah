@@ -36,6 +36,23 @@
   font-family: var(--font-family);
 }
 
+/* Forzar tipografía de iconos de Google Material Icons */
+.material-icons {
+  font-family: 'Material Icons' !important;
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: 'liga';
+}
+
 body {
   background-color: var(--bg-primary);
   color: var(--text-primary);
