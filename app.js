@@ -207,8 +207,8 @@ document.addEventListener("DOMContentLoaded", () => {
   function showView(viewName, pushState = true) {
     const token = localStorage.getItem("focusflow_auth_token");
     if (!token && viewName !== "welcome" && viewName !== "coach-register" && viewName !== "onboarding") {
-      // Route Guard: Evitar navegación si no está autenticado (mostrando onboarding en primer inicio)
-      viewName = localStorage.getItem("focusflow_onboarded_seen") ? "welcome" : "onboarding";
+      // Route Guard: Mostrar la presentación de onboarding por defecto a usuarios no autenticados
+      viewName = "onboarding";
     }
 
     if (viewName !== "dashboard") {
@@ -2008,8 +2008,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (token) {
           showView("dashboard", false);
         } else {
-          const hasSeenOnboarding = localStorage.getItem("focusflow_onboarded_seen");
-          showView(hasSeenOnboarding ? "welcome" : "onboarding", false);
+          showView("onboarding", false);
         }
       }
     }
