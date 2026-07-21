@@ -2008,7 +2008,8 @@ document.addEventListener("DOMContentLoaded", () => {
         if (token) {
           showView("dashboard", false);
         } else {
-          showView("welcome", false);
+          const hasSeenOnboarding = localStorage.getItem("focusflow_onboarded_seen");
+          showView(hasSeenOnboarding ? "welcome" : "onboarding", false);
         }
       }
     }
