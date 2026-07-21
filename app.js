@@ -1866,7 +1866,7 @@ document.addEventListener("DOMContentLoaded", () => {
     };
     saveState();
     
-    showView("welcome");
+    showView("onboarding");
     
     if (formLogin) formLogin.reset();
     if (formRegister) formRegister.reset();
@@ -2022,7 +2022,17 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   
   window.addEventListener("hashchange", checkHashRoute);
-  // Chequear al cargar la página
-  checkHashRoute();
+  
+  // Ejecutar inicialización de vista al cargar la página
+  if (window.location.hash === "#registro-coach") {
+    showView("coach-register");
+  } else {
+    const token = localStorage.getItem("focusflow_auth_token");
+    if (token) {
+      showView("dashboard", false);
+    } else {
+      showView("onboarding", false);
+    }
+  }
 
 });
