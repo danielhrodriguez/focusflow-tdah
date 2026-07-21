@@ -3,10 +3,8 @@
     "relation": ["delegate_permission/common.handle_all_urls"],
     "target": {
       "namespace": "android_app",
-      "package_name": "com.focusflow.app",
-      "sha256_cert_fingerprints": [
-        "REEMPLAZAR_CON_TU_SHA256_FINGERPRINT_DE_GOOGLE_PLAY_CONSOLE"
-      ]
+      "package_name": "com.onrender.focusflow_app_nkwn.twa",
+      "sha256_cert_fingerprints": ["4B:56:FF:41:CB:DC:55:76:C5:1A:43:89:79:B6:28:53:AA:1B:3E:15:32:8E:2A:5F:BA:E9:23:56:5A:E3:1D:94"]
     }
   }
 ]
