@@ -6,8 +6,8 @@ const ASSETS_TO_CACHE = [
   '/app.js',
   '/seedData.js',
   '/manifest.json',
-  '/icon-192.jpg',
-  '/icon-512.jpg'
+  '/icon-192.png',
+  '/icon-512.png'
 ];
 
 self.addEventListener('install', (e) => {
