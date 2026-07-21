@@ -46,6 +46,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // CONSULTAS AL DOM CENTRALIZADAS (Evita Temporal Dead Zone)
   // ==========================================
   const views = {
+    onboarding: document.getElementById("view-onboarding"),
     welcome: document.getElementById("view-welcome"),
     intake: document.getElementById("view-intake"),
     dashboard: document.getElementById("view-dashboard"),
@@ -205,9 +206,9 @@ document.addEventListener("DOMContentLoaded", () => {
   // ==========================================
   function showView(viewName, pushState = true) {
     const token = localStorage.getItem("focusflow_auth_token");
-    if (!token && viewName !== "welcome" && viewName !== "coach-register") {
-      // Route Guard: Evitar navegación a cualquier pantalla si no está autenticado (excepto bienvenida y registro de coach)
-      viewName = "welcome";
+    if (!token && viewName !== "welcome" && viewName !== "coach-register" && viewName !== "onboarding") {
+      // Route Guard: Evitar navegación si no está autenticado (mostrando onboarding en primer inicio)
+      viewName = localStorage.getItem("focusflow_onboarded_seen") ? "welcome" : "onboarding";
     }
 
     if (viewName !== "dashboard") {
@@ -226,9 +227,9 @@ document.addEventListener("DOMContentLoaded", () => {
       window.history.pushState({ view: viewName }, "", `#${viewName}`);
     }
 
-    if (viewName === "welcome" || viewName === "coach-register") {
+    if (viewName === "onboarding" || viewName === "welcome" || viewName === "coach-register") {
       bcRoot.innerText = "FocusFlow";
-      bcCurrent.innerText = viewName === "welcome" ? "Bienvenida" : "Registro Clínico";
+      bcCurrent.innerText = viewName === "onboarding" ? "Presentación" : (viewName === "welcome" ? "Bienvenida" : "Registro Clínico");
       if (btnLogout) btnLogout.classList.add("hidden");
       const roleSelector = document.querySelector(".role-selector");
       if (roleSelector) roleSelector.classList.add("hidden");
@@ -263,6 +264,98 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // ==========================================
+  // CONTROLADOR DE CARROUSEL DE BIENVENIDA (ONBOARDING)
+  // ==========================================
+  let currentOnboardingSlide = 1;
+  const btnOnboardingSkip = document.getElementById("btn-onboarding-skip");
+  const btnOnboardingNext = document.getElementById("btn-onboarding-next");
+  const onboardingBtnText = document.getElementById("onboarding-btn-text");
+  const onboardingBtnIcon = document.getElementById("onboarding-btn-icon");
+  const onboardingSlides = document.querySelectorAll(".onboarding-slide");
+  const onboardingDots = document.querySelectorAll(".onboarding-dots .dot");
+
+  function updateOnboardingSlide(slideNum) {
+    currentOnboardingSlide = slideNum;
+    onboardingSlides.forEach(slide => {
+      if (parseInt(slide.dataset.slide) === slideNum) {
+        slide.classList.add("active");
+      } else {
+        slide.classList.remove("active");
+      }
+    });
+
+    onboardingDots.forEach(dot => {
+      if (parseInt(dot.dataset.dot) === slideNum) {
+        dot.classList.add("active");
+      } else {
+        dot.classList.remove("active");
+      }
+    });
+
+    if (slideNum === 3) {
+      if (onboardingBtnText) onboardingBtnText.innerText = "Ingresar a FocusFlow";
+      if (onboardingBtnIcon) onboardingBtnIcon.innerHTML = '<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>';
+    } else {
+      if (onboardingBtnText) onboardingBtnText.innerText = "Siguiente";
+      if (onboardingBtnIcon) onboardingBtnIcon.innerHTML = '<line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>';
+    }
+  }
+
+  if (btnOnboardingNext) {
+    btnOnboardingNext.addEventListener("click", () => {
+      if (currentOnboardingSlide < 3) {
+        updateOnboardingSlide(currentOnboardingSlide + 1);
+      } else {
+        finishOnboarding();
+      }
+    });
+  }
+
+  if (btnOnboardingSkip) {
+    btnOnboardingSkip.addEventListener("click", () => {
+      finishOnboarding();
+    });
+  }
+
+  onboardingDots.forEach(dot => {
+    dot.addEventListener("click", (e) => {
+      const targetDot = parseInt(e.currentTarget.dataset.dot);
+      if (targetDot) updateOnboardingSlide(targetDot);
+    });
+  });
+
+  function finishOnboarding() {
+    localStorage.setItem("focusflow_onboarded_seen", "true");
+    showView("welcome");
+  }
+
+  const btnReopenOnboarding = document.getElementById("btn-reopen-onboarding");
+  if (btnReopenOnboarding) {
+    btnReopenOnboarding.addEventListener("click", () => {
+      updateOnboardingSlide(1);
+      showView("onboarding");
+    });
+  }
+
+  // Soporte de Swipe táctil en móviles para el carrusel
+  let touchStartX = 0;
+  let touchEndX = 0;
+  const slidesWrapper = document.querySelector(".onboarding-slides-wrapper");
+  if (slidesWrapper) {
+    slidesWrapper.addEventListener("touchstart", (e) => {
+      touchStartX = e.changedTouches[0].screenX;
+    }, false);
+    slidesWrapper.addEventListener("touchend", (e) => {
+      touchEndX = e.changedTouches[0].screenX;
+      if (touchEndX < touchStartX - 40) {
+        if (currentOnboardingSlide < 3) updateOnboardingSlide(currentOnboardingSlide + 1);
+      } else if (touchEndX > touchStartX + 40) {
+        if (currentOnboardingSlide > 1) updateOnboardingSlide(currentOnboardingSlide - 1);
+      }
+    }, false);
   }
 
   // ==========================================

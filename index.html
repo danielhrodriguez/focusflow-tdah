@@ -18,7 +18,7 @@
   <link rel="icon" type="image/png" href="/icon-192.png">
   <link rel="apple-touch-icon" href="/icon-192.png">
   
-  <link rel="stylesheet" href="styles.css?v=1.1.0">
+  <link rel="stylesheet" href="styles.css?v=1.1.1">
 </head>
 <body class="dark-theme">
 
@@ -114,8 +114,92 @@
   <!-- CONTENEDOR PRINCIPAL DE PANTALLAS (SPA Router) -->
   <main class="app-container">
 
+    <!-- 0. CARROUSEL DE BIENVENIDA E INTRODUCCIÓN (ONBOARDING) -->
+    <section id="view-onboarding" class="app-view">
+      <div class="onboarding-card">
+        <!-- Barra superior del carrusel -->
+        <div class="onboarding-top-bar">
+          <div class="onboarding-brand">
+            <svg class="logo-icon-svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--color-teal)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="animation: logo-spin 12s linear infinite;">
+              <circle cx="12" cy="12" r="3"></circle>
+              <circle cx="19" cy="8" r="2"></circle>
+              <circle cx="5" cy="16" r="2"></circle>
+              <circle cx="17" cy="18" r="2"></circle>
+              <circle cx="7" cy="6" r="2"></circle>
+            </svg>
+            <span style="font-weight: 800; color: #fff; font-size: 1.15rem; letter-spacing: -0.5px;">FocusFlow</span>
+          </div>
+          <button id="btn-onboarding-skip" class="btn-skip-onboarding">
+            Omitir <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle;"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+        </div>
+
+        <!-- Diapositivas del Carrusel -->
+        <div class="onboarding-slides-wrapper">
+          
+          <!-- Slide 1: Anti-Parálisis -->
+          <div class="onboarding-slide active" data-slide="1">
+            <div class="slide-illustration">
+              <div class="illustration-glow teal-glow"></div>
+              <svg width="68" height="68" viewBox="0 0 24 24" fill="none" stroke="var(--color-teal)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+                <path d="M7 3L5 1.5M17 3l2-1.5"></path>
+              </svg>
+            </div>
+            <span class="badge badge-emerald mb-2">Técnica Anti-Parálisis</span>
+            <h2>Desglosa la Parálisis</h2>
+            <p>Transforma proyectos abrumadores en micro-pasos de 10 minutos ridículamente fáciles de iniciar.</p>
+          </div>
+
+          <!-- Slide 2: Regulación Emocional -->
+          <div class="onboarding-slide" data-slide="2">
+            <div class="slide-illustration">
+              <div class="illustration-glow violet-glow"></div>
+              <svg width="68" height="68" viewBox="0 0 24 24" fill="none" stroke="var(--color-violet)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z"></path>
+                <path d="M12 6a4 4 0 0 0-4 4c0 2 2 3 2 4h4c0-1 2-2 2-4a4 4 0 0 0-4-4z"></path>
+              </svg>
+            </div>
+            <span class="badge badge-clinical mb-2">Reestructuración Cognitiva</span>
+            <h2>Reencuadra tus Pensamientos</h2>
+            <p>Detén el bucle de autocrítica y frustración reconociendo distorsiones cognitivas con compasión clínica.</p>
+          </div>
+
+          <!-- Slide 3: Supervisión CADDRA -->
+          <div class="onboarding-slide" data-slide="3">
+            <div class="slide-illustration">
+              <div class="illustration-glow amber-glow"></div>
+              <svg width="68" height="68" viewBox="0 0 24 24" fill="none" stroke="var(--color-amber)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
+              </svg>
+            </div>
+            <span class="badge badge-amber mb-2">Supervisión CADDRA 4.1</span>
+            <h2>Acompañamiento Profesional</h2>
+            <p>Conecta en tiempo real con Coaches certificados en TDAH y comparte tus métricas de adherencia sin juicios.</p>
+          </div>
+
+        </div>
+
+        <!-- Pie y Navegación del Carrusel -->
+        <div class="onboarding-footer">
+          <div class="onboarding-dots">
+            <span class="dot active" data-dot="1"></span>
+            <span class="dot" data-dot="2"></span>
+            <span class="dot" data-dot="3"></span>
+          </div>
+
+          <button id="btn-onboarding-next" class="btn btn-primary btn-onboarding-action">
+            <span id="onboarding-btn-text">Siguiente</span>
+            <svg id="onboarding-btn-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          </button>
+        </div>
+
+      </div>
+    </section>
+
     <!-- 0. PANTALLA DE BIENVENIDA Y ACCESO (LOGIN/REGISTRO) -->
-    <section id="view-welcome" class="app-view">
+    <section id="view-welcome" class="app-view hidden">
       <div class="welcome-container" style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 2.5rem; min-height: 520px; align-items: center; width: 100%;">
         
         <!-- Lado Izquierdo: Presentación y Sello Clínico -->
@@ -176,6 +260,9 @@
               Entrar al Espacio Personal
             </button>
             <p class="text-xs text-muted mt-2 text-center" style="font-size: 0.7rem;">Puedes usar de prueba: <strong>paciente@focusflow.com</strong> y clave <strong>123</strong></p>
+            <button type="button" id="btn-reopen-onboarding" class="btn btn-secondary btn-xs mt-3 btn-full-width" style="border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.03); color: var(--color-teal); display: flex; align-items: center; justify-content: center; gap: 4px;">
+              ✨ Ver presentación de la app
+            </button>
           </form>
 
           <!-- Formulario de Registro -->
