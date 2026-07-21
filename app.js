@@ -1508,7 +1508,9 @@ document.addEventListener("DOMContentLoaded", () => {
     alertsList.innerHTML = alerts.map(a => `
       <div class="alert-row ${a.severity}">
         <div class="alert-icon-wrap">
-          <span class="material-icons">${a.severity === 'critical' ? 'error' : 'warning'}</span>
+          ${a.severity === 'critical' 
+            ? '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>' 
+            : '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>'}
         </div>
         <div class="alert-body">
           <h4>${a.type}</h4>
@@ -1573,19 +1575,19 @@ document.addEventListener("DOMContentLoaded", () => {
             
             <div class="d-flex flex-col gap-2 mt-3">
               <a href="https://wa.me/${coach.phone}?text=Hola%20${encodeURIComponent(coach.name)},%20me%20pongo%20en%20contacto%20contigo%20para%20coordinar%20una%20consulta%20de%20acompa%C3%B1amiento%20para%20TDAH.%20%C2%A1Muchas%20gracias!" target="_blank" class="btn btn-xs btn-primary btn-full-width" style="background-color: #25d366; border: none; display: flex; align-items: center; justify-content: center; gap: 5px; padding: 6px 0; font-weight: 600; color: #fff; border-radius: 6px;">
-                <span class="material-icons" style="font-size: 1rem;">chat</span> WhatsApp de ${coach.name.split(" ")[1]}
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg> WhatsApp de ${coach.name.split(" ")[1]}
               </a>
               
               <a href="https://mail.google.com/mail/?view=cm&fs=1&to=${coach.email}&su=Consulta%20de%20acompa%C3%B1amiento%20para%20TDAH&body=Hola%20${encodeURIComponent(coach.name)},%20me%20gustar%C3%ADa%20coordinar%20una%20consulta%20de%20acompa%C3%B1amiento." target="_blank" class="btn btn-xs btn-secondary btn-full-width" style="display: flex; align-items: center; justify-content: center; gap: 5px; padding: 6px 0; font-weight: 600; border-radius: 6px; border: 1px solid rgba(255,255,255,0.05); background: rgba(234, 67, 53, 0.1); color: #fca5a5;">
-                <span class="material-icons" style="font-size: 1rem; color: #ea4335;">mail</span> Redactar en Gmail
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ea4335" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg> Redactar en Gmail
               </a>
 
               <a href="https://outlook.live.com/mail/0/deeplink/compose?to=${coach.email}&subject=Consulta%20de%20acompa%C3%B1amiento%20para%20TDAH&body=Hola%20${encodeURIComponent(coach.name)},%20me%20gustar%C3%ADa%20coordinar%20una%20consulta%20de%20acompa%C3%B1amiento." target="_blank" class="btn btn-xs btn-secondary btn-full-width" style="display: flex; align-items: center; justify-content: center; gap: 5px; padding: 6px 0; font-weight: 600; border-radius: 6px; border: 1px solid rgba(255,255,255,0.05); background: rgba(0, 120, 212, 0.1); color: #93c5fd;">
-                <span class="material-icons" style="font-size: 1rem; color: #0078d4;">mail</span> Redactar en Outlook/Hotmail
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0078d4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg> Redactar en Outlook/Hotmail
               </a>
 
               <a href="mailto:${coach.email}?subject=Consulta%20de%20acompa%C3%B1amiento%20para%20TDAH" class="btn btn-xs btn-secondary btn-full-width" style="display: flex; align-items: center; justify-content: center; gap: 5px; padding: 6px 0; font-weight: 600; border-radius: 6px; font-size: 0.7rem; opacity: 0.6;">
-                <span class="material-icons" style="font-size: 0.9rem;">open_in_new</span> Abrir cliente local (mailto)
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg> Abrir cliente local (mailto)
               </a>
             </div>
           `;
