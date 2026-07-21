@@ -1,0 +1,24 @@
+{
+  "name": "FocusFlow - TDAH & Acompañamiento Cognitivo",
+  "short_name": "FocusFlow",
+  "description": "Plataforma de acompañamiento cognitivo-conductual, gestión de tareas por micro-pasos y seguimiento de síntomas para adultos con TDAH.",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#0f172a",
+  "theme_color": "#0f172a",
+  "icons": [
+    {
+      "src": "/icon-192.jpg",
+      "sizes": "192x192",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    }
+  ]
+}
