@@ -11,19 +11,20 @@ const DB_FILE = path.join(__dirname, 'db.json');
 app.use(cors());
 app.use(express.json());
 
-// Servir archivos estáticos del frontend directamente
-app.use(express.static(__dirname));
-
 // Endpoint para Digital Asset Links (Verificación de Dominio TWA para Google Play)
 app.get('/.well-known/assetlinks.json', (req, res) => {
   const assetlinksPath = path.join(__dirname, 'assetlinks.json');
   if (fs.existsSync(assetlinksPath)) {
     res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Access-Control-Allow-Origin', '*');
     res.sendFile(assetlinksPath);
   } else {
     res.json([]);
   }
 });
+
+// Servir archivos estáticos del frontend directamente (permitiendo carpetas ocultas como .well-known)
+app.use(express.static(__dirname, { dotfiles: 'allow' }));
 
 // ==========================================
 // CONFIGURACIÓN DE MERCADO PAGO (SANDBOX)
