@@ -78,7 +78,13 @@
   <!-- CABECERA PERSISTENTE (Mitiga Inatención y proporciona anclaje) -->
   <header class="app-header">
     <div class="header-brand">
-      <span class="material-icons logo-icon">bubble_chart</span>
+      <svg class="logo-icon-svg" width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="var(--color-teal)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="animation: logo-spin 12s linear infinite;">
+        <circle cx="12" cy="12" r="3"></circle>
+        <circle cx="19" cy="8" r="2"></circle>
+        <circle cx="5" cy="16" r="2"></circle>
+        <circle cx="17" cy="18" r="2"></circle>
+        <circle cx="7" cy="6" r="2"></circle>
+      </svg>
       <div>
         <h1>FocusFlow</h1>
         <div class="breadcrumbs">
@@ -121,14 +127,19 @@
           <!-- Sellos de Cumplimiento -->
           <div class="clinical-stamps mt-8 d-flex gap-4" style="border-top: 1px solid rgba(255,255,255,0.05); padding-top: 1.5rem;">
             <div class="stamp-item d-flex flex-items-center gap-2">
-              <span class="material-icons text-teal" style="font-size: 1.5rem;">security</span>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--color-teal)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+              </svg>
               <div>
                 <h5 style="margin: 0; font-size: 0.8rem; color: var(--color-text-primary);">Cumplimiento CADDRA 4.1</h5>
                 <p class="text-xs text-muted" style="margin: 0;">Guías clínicas canadienses</p>
               </div>
             </div>
             <div class="stamp-item d-flex flex-items-center gap-2">
-              <span class="material-icons text-teal" style="font-size: 1.5rem;">privacy_tip</span>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--color-teal)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+              </svg>
               <div>
                 <h5 style="margin: 0; font-size: 0.8rem; color: var(--color-text-primary);">Privacidad Protegida</h5>
                 <p class="text-xs text-muted" style="margin: 0;">Datos médicos cifrados</p>
