@@ -580,7 +580,13 @@ document.addEventListener("DOMContentLoaded", () => {
     const inputName = document.getElementById("intake-name-input").value.trim();
     const selectCountry = document.getElementById("intake-country-select").value;
 
-    appState.userProfile.name = inputName || "Alex Marín";
+    if (!inputName) {
+      alert("Por favor, ingresa tu nombre y apellido para continuar.");
+      document.getElementById("intake-name-input").focus();
+      return;
+    }
+
+    appState.userProfile.name = inputName;
     appState.userProfile.country = selectCountry;
     appState.userProfile.kryptoniteArea = selectedWfirsAreas.length > 0 ? selectedWfirsAreas.join(", ") : "Autonomía";
     appState.userProfile.completedIntake = true;
@@ -2036,5 +2042,35 @@ document.addEventListener("DOMContentLoaded", () => {
       showView("onboarding", false);
     }
   }
+
+  // Interacción de edición rápida de nombre en el Dashboard
+  const editProfileName = async () => {
+    const currentName = appState.userProfile.name || "Invitado";
+    const newName = prompt("Ingresa tu nombre y apellido:", currentName);
+    if (newName && newName.trim() && newName.trim() !== currentName) {
+      const sanitizedName = newName.trim();
+      appState.userProfile.name = sanitizedName;
+      
+      const nameEl = document.getElementById("client-name-display");
+      if (nameEl) nameEl.innerText = sanitizedName;
+      
+      saveState();
+
+      // Notificar al backend sobre el cambio de nombre
+      await apiPost('/api/profile', {
+        name: sanitizedName,
+        country: appState.userProfile.country || 'ARG',
+        kryptoniteArea: appState.userProfile.kryptoniteArea || 'Autonomía',
+        asrsScore: appState.userProfile.asrsScore || 0,
+        camhAlerts: appState.userProfile.camhAlerts || 0,
+        intakeData: appState.intakeData
+      });
+    }
+  };
+
+  const nameDisplayEl = document.getElementById("client-name-display");
+  const editNameBtnEl = document.getElementById("btn-edit-profile-name");
+  if (nameDisplayEl) nameDisplayEl.addEventListener("click", editProfileName);
+  if (editNameBtnEl) editNameBtnEl.addEventListener("click", editProfileName);
 
 });

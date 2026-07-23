@@ -18,7 +18,7 @@
   <link rel="icon" type="image/png" href="/icon-192.png">
   <link rel="apple-touch-icon" href="/icon-192.png">
   
-  <link rel="stylesheet" href="styles.css?v=1.1.5">
+  <link rel="stylesheet" href="styles.css?v=1.1.6">
 </head>
 <body class="dark-theme">
 
@@ -510,7 +510,7 @@
               <div class="d-flex flex-col gap-4">
                 <div class="form-group flex-col d-flex">
                   <label for="intake-name-input" class="text-sm text-muted mb-2">Escribe tu Nombre:</label>
-                  <input type="text" id="intake-name-input" placeholder="Ej: Alex Marín" class="input-flat" style="width: 100%; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.2); padding: 10px; border-radius: 6px;" value="Alex Marín">
+                  <input type="text" id="intake-name-input" placeholder="Ej: Alex Marín" class="input-flat" style="width: 100%; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.2); padding: 10px; border-radius: 6px;" value="">
                 </div>
                 <div class="form-group flex-col d-flex">
                   <label for="intake-country-select" class="text-sm text-muted mb-2">Selecciona tu País (para asignación del Coach de tu región):</label>
@@ -543,7 +543,7 @@
         <div class="card card-welcome span-2-cols">
           <div class="card-content">
             <span class="badge badge-emerald">Enfoque Activo</span>
-            <h2>Hola, <span id="client-name-display">Alex</span></h2>
+            <h2>Hola, <span id="client-name-display" style="cursor: pointer;" title="Haz clic para cambiar tu nombre">Alex</span> <svg id="btn-edit-profile-name" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--color-text-secondary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="cursor: pointer; margin-left: 4px; vertical-align: middle;" title="Editar Nombre"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></h2>
             <p>Hoy es un buen día para avanzar con micro-pasos. Tómalo con calma.</p>
             
             <div class="quick-stats-row mt-6">

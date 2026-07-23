@@ -1,4 +1,4 @@
-const CACHE_NAME = 'focusflow-v11';
+const CACHE_NAME = 'focusflow-v12';
 
 self.addEventListener('install', (e) => {
   self.skipWaiting();
