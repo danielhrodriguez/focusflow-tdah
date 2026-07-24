@@ -915,6 +915,10 @@ textarea.input-flat {
   max-width: 80%;
 }
 
+.st-step {
+  padding-top: 1.5rem;
+}
+
 .clinical-tag {
   position: absolute;
   top: 1.5rem;
