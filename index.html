@@ -18,7 +18,7 @@
   <link rel="icon" type="image/png" href="/icon-192.png">
   <link rel="apple-touch-icon" href="/icon-192.png">
   
-  <link rel="stylesheet" href="styles.css?v=1.1.9">
+  <link rel="stylesheet" href="styles.css?v=1.2.0">
 </head>
 <body class="dark-theme">
 
@@ -254,7 +254,12 @@
             </div>
             <div class="form-group d-flex flex-col text-left">
               <label for="login-password" class="text-xs text-muted mb-2" style="text-align: left; display: block;">Contraseña:</label>
-              <input type="password" id="login-password" placeholder="••••••••" class="input-flat" style="padding: 10px; border-radius: 6px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); width: 100%; color: #fff;" required>
+              <div style="position: relative; width: 100%;">
+                <input type="password" id="login-password" placeholder="••••••••" class="input-flat" style="padding: 10px 40px 10px 10px; border-radius: 6px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); width: 100%; color: #fff; box-sizing: border-box;" required>
+                <button type="button" class="btn-toggle-password" data-target="login-password" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; padding: 0; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--color-text-secondary);">
+                  <svg class="eye-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                </button>
+              </div>
             </div>
             <button type="submit" class="btn btn-primary mt-4 btn-full-width" style="height: 42px; font-weight: 700; cursor: pointer; border-radius: 6px; color: #fff; background-color: var(--color-teal); border: none;">
               Entrar al Espacio Personal
@@ -273,7 +278,12 @@
             </div>
             <div class="form-group d-flex flex-col text-left">
               <label for="register-password" class="text-xs text-muted mb-2" style="text-align: left; display: block;">Contraseña:</label>
-              <input type="password" id="register-password" placeholder="Mínimo 6 caracteres" class="input-flat" style="padding: 10px; border-radius: 6px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); width: 100%; color: #fff;" required minlength="6">
+              <div style="position: relative; width: 100%;">
+                <input type="password" id="register-password" placeholder="Mínimo 6 caracteres" class="input-flat" style="padding: 10px 40px 10px 10px; border-radius: 6px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); width: 100%; color: #fff; box-sizing: border-box;" required minlength="6">
+                <button type="button" class="btn-toggle-password" data-target="register-password" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; padding: 0; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--color-text-secondary);">
+                  <svg class="eye-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                </button>
+              </div>
             </div>
             
             <!-- Checkbox de Políticas -->
@@ -347,7 +357,12 @@
 
             <div class="form-group flex-col d-flex">
               <label for="coach-register-password" class="text-xs text-muted mb-2" style="text-align: left;">Elige una Contraseña:</label>
-              <input type="password" id="coach-register-password" placeholder="••••••••" class="input-flat" style="width: 100%; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.25); padding: 10px; border-radius: 6px; color: #fff;" required>
+              <div style="position: relative; width: 100%;">
+                <input type="password" id="coach-register-password" placeholder="••••••••" class="input-flat" style="padding: 10px 40px 10px 10px; border-radius: 6px; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.1); width: 100%; color: #fff; box-sizing: border-box;" required>
+                <button type="button" class="btn-toggle-password" data-target="coach-register-password" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; padding: 0; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--color-text-secondary);">
+                  <svg class="eye-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                </button>
+              </div>
             </div>
 
             <div class="form-group flex-col d-flex">
