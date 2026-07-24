@@ -284,6 +284,33 @@ app.post('/api/auth/logout', (req, res) => {
   res.json({ success: true });
 });
 
+// Solicitar eliminación de cuenta y todos los datos asociados (Cumplimiento GDPR/Amazon/Google Play)
+app.post('/api/auth/request-deletion', (req, res) => {
+  const { email, password } = req.body;
+  if (!email || !password) {
+    return res.status(400).json({ error: "Email y contraseña requeridos para confirmar la baja." });
+  }
+
+  const db = readDatabase();
+  const user = db.users[email];
+  if (!user || user.password !== password) {
+    return res.status(400).json({ error: "Credenciales incorrectas. No se pudo validar la identidad." });
+  }
+
+  // Eliminar sesiones asociadas al usuario
+  Object.keys(db.sessions).forEach(token => {
+    if (db.sessions[token] === email) {
+      delete db.sessions[token];
+    }
+  });
+
+  // Eliminar el usuario y su bitácora
+  delete db.users[email];
+  writeDatabase(db);
+
+  res.json({ success: true, message: "Su cuenta y todos sus datos clínicos y personales han sido borrados de forma permanente." });
+});
+
 
 // ==========================================
 // ENDPOINTS DE LA API REST (PROTEGIDOS)

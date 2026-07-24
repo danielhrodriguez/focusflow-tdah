@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FocusFlow | Solicitar Eliminación de Cuenta</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-primary: #0f172a;
+      --bg-secondary: #1e293b;
+      --color-teal: #14b8a6;
+      --color-rose: #f43f5e;
+      --color-emerald: #10b981;
+      --color-text-primary: #f8fafc;
+      --color-text-secondary: #94a3b8;
+      --border-glass: rgba(255, 255, 255, 0.05);
+    }
+    body {
+      background-color: var(--bg-primary);
+      color: var(--color-text-primary);
+      font-family: 'Outfit', sans-serif;
+      margin: 0;
+      padding: 0;
+      line-height: 1.6;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      box-sizing: border-box;
+    }
+    .card {
+      max-width: 480px;
+      width: 100%;
+      margin: 2rem 1rem;
+      padding: 2.5rem;
+      background: var(--bg-secondary);
+      border-radius: 16px;
+      border: 1px solid var(--border-glass);
+      box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+      text-align: center;
+    }
+    header h1 {
+      margin: 0;
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: var(--color-text-primary);
+    }
+    header p {
+      color: var(--color-text-secondary);
+      margin: 0.5rem 0 1.5rem 0;
+      font-size: 0.9rem;
+    }
+    .warning-box {
+      background: rgba(244, 63, 94, 0.06);
+      border: 1px solid rgba(244, 63, 94, 0.2);
+      border-radius: 10px;
+      padding: 1rem;
+      text-align: left;
+      margin-bottom: 2rem;
+    }
+    .warning-box h4 {
+      color: var(--color-rose);
+      margin: 0 0 0.25rem 0;
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+    .warning-box p {
+      margin: 0;
+      font-size: 0.8rem;
+      color: var(--color-text-secondary);
+    }
+    .form-group {
+      text-align: left;
+      margin-bottom: 1.25rem;
+    }
+    label {
+      display: block;
+      font-size: 0.8rem;
+      color: var(--color-text-secondary);
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+    }
+    input {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 12px;
+      background: rgba(0, 0, 0, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      color: #fff;
+      font-family: inherit;
+      font-size: 0.9rem;
+      transition: all 0.2s;
+    }
+    input:focus {
+      outline: none;
+      border-color: var(--color-teal);
+      box-shadow: 0 0 0 2px rgba(20, 184, 166, 0.15);
+    }
+    button {
+      width: 100%;
+      padding: 12px;
+      background-color: var(--color-rose);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-top: 1rem;
+    }
+    button:hover {
+      background-color: #e11d48;
+    }
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    .alert {
+      padding: 10px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      margin-bottom: 1.25rem;
+      text-align: left;
+      display: none;
+    }
+    .alert-error {
+      background: rgba(244, 63, 94, 0.1);
+      color: #fda4af;
+      border: 1px solid rgba(244, 63, 94, 0.2);
+    }
+    .alert-success {
+      background: rgba(16, 185, 129, 0.1);
+      color: #a7f3d0;
+      border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+    .btn-link {
+      display: inline-block;
+      margin-top: 1.5rem;
+      font-size: 0.85rem;
+      color: var(--color-text-secondary);
+      text-decoration: underline;
+    }
+    .btn-link:hover {
+      color: #fff;
+    }
+    .success-container {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div id="form-container">
+      <header>
+        <h1>Eliminar Cuenta y Datos</h1>
+        <p>Confirmación obligatoria de baja permanente</p>
+      </header>
+
+      <div class="warning-box">
+        <h4>⚠️ Advertencia de Eliminación Definitiva</h4>
+        <p>Al confirmar esta baja, tu cuenta, registros de humor semanales, historial de TCC y datos del onboarding se borrarán permanentemente del servidor. Esta acción no se puede deshacer.</p>
+      </div>
+
+      <div id="error-alert" class="alert alert-error"></div>
+
+      <form id="delete-form">
+        <div class="form-group">
+          <label for="email">Dirección de Correo Electrónico:</label>
+          <input type="email" id="email" placeholder="ejemplo@correo.com" required>
+        </div>
+        <div class="form-group">
+          <label for="password">Contraseña para Confirmar:</label>
+          <input type="password" id="password" placeholder="••••••••" required>
+        </div>
+        <button type="submit" id="btn-submit">Confirmar y Borrar Permanentemente</button>
+      </form>
+    </div>
+
+    <div id="success-container" class="success-container">
+      <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="var(--color-emerald)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin: 0 auto 1.5rem auto; display: block;"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+      <h2 style="color: var(--color-emerald); margin: 0 0 1rem 0;">¡Datos Eliminados!</h2>
+      <p style="color: var(--color-text-secondary); font-size: 0.95rem; margin-bottom: 2rem;" id="success-msg">Su cuenta y todos sus registros han sido removidos de forma definitiva de nuestros servidores.</p>
+      <a href="/" class="btn-link" style="font-weight: 700; color: var(--color-teal); text-decoration: none;">Volver al Inicio</a>
+    </div>
+
+    <a href="/privacy.html" id="btn-back" class="btn-link">Volver a Políticas de Privacidad</a>
+  </div>
+
+  <script>
+    const form = document.getElementById("delete-form");
+    const emailInput = document.getElementById("email");
+    const passwordInput = document.getElementById("password");
+    const btnSubmit = document.getElementById("btn-submit");
+    const errorAlert = document.getElementById("error-alert");
+    const formContainer = document.getElementById("form-container");
+    const successContainer = document.getElementById("success-container");
+    const successMsg = document.getElementById("success-msg");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      
+      btnSubmit.disabled = true;
+      btnSubmit.innerText = "Procesando eliminación...";
+      errorAlert.style.display = "none";
+
+      const email = emailInput.value.trim();
+      const password = passwordInput.value;
+
+      try {
+        const response = await fetch("/api/auth/request-deletion", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ email, password })
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+          successMsg.innerText = data.message;
+          formContainer.style.display = "none";
+          successContainer.style.display = "block";
+          document.getElementById("btn-back").style.display = "none";
+        } else {
+          errorAlert.innerText = data.error || "Ocurrió un error inesperado. Inténtelo de nuevo.";
+          errorAlert.style.display = "block";
+          btnSubmit.disabled = false;
+          btnSubmit.innerText = "Confirmar y Borrar Permanentemente";
+        }
+      } catch (err) {
+        errorAlert.innerText = "Error de red. No se pudo conectar al servidor. Inténtelo más tarde.";
+        errorAlert.style.display = "block";
+        btnSubmit.disabled = false;
+        btnSubmit.innerText = "Confirmar y Borrar Permanentemente";
+      }
+    });
+  </script>
+</body>
+</html>
